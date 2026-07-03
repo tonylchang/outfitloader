@@ -3,30 +3,37 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 71;
+	objectVersion = 77;
 	objects = {
 
-/* Begin PBXBuildFile section */
-		002001000000000000000001 /* OutfitloaderApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 001001000000000000000001 /* OutfitloaderApp.swift */; };
-		002001000000000000000002 /* SpikeRootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 001001000000000000000002 /* SpikeRootView.swift */; };
-		002001000000000000000003 /* CameraCaptureView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 001001000000000000000003 /* CameraCaptureView.swift */; };
-		002001000000000000000004 /* ImageUtilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = 001001000000000000000004 /* ImageUtilities.swift */; };
-		002001000000000000000005 /* PersonSilhouetteGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 001001000000000000000005 /* PersonSilhouetteGenerator.swift */; };
-		002001000000000000000006 /* TryOnComposer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 001001000000000000000006 /* TryOnComposer.swift */; };
-		002001000000000000000009 /* ClothingForegroundExtractor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 001001000000000000000009 /* ClothingForegroundExtractor.swift */; };
-/* End PBXBuildFile section */
-
 /* Begin PBXFileReference section */
-		001001000000000000000001 /* OutfitloaderApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OutfitloaderApp.swift; sourceTree = "<group>"; };
-		001001000000000000000002 /* SpikeRootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpikeRootView.swift; sourceTree = "<group>"; };
-		001001000000000000000003 /* CameraCaptureView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraCaptureView.swift; sourceTree = "<group>"; };
-		001001000000000000000004 /* ImageUtilities.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageUtilities.swift; sourceTree = "<group>"; };
-		001001000000000000000005 /* PersonSilhouetteGenerator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersonSilhouetteGenerator.swift; sourceTree = "<group>"; };
-		001001000000000000000006 /* TryOnComposer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TryOnComposer.swift; sourceTree = "<group>"; };
-		001001000000000000000007 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		001001000000000000000008 /* Outfitloader.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Outfitloader.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		001001000000000000000009 /* ClothingForegroundExtractor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClothingForegroundExtractor.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		000000000000000000000021 /* Exceptions for "Outfitloader" folder in "Outfitloader" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 000000000000000000000005 /* Outfitloader */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		000000000000000000000004 /* Outfitloader */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				000000000000000000000021 /* Exceptions for "Outfitloader" folder in "Outfitloader" target */,
+			);
+			explicitFileTypes = {
+			};
+			explicitFolders = (
+			);
+			path = Outfitloader;
+			sourceTree = "<group>";
+		};
+/* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		000000000000000000000008 /* Frameworks */ = {
@@ -55,21 +62,6 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
-		000000000000000000000004 /* Outfitloader */ = {
-			isa = PBXGroup;
-			children = (
-				001001000000000000000001 /* OutfitloaderApp.swift */,
-				001001000000000000000002 /* SpikeRootView.swift */,
-				001001000000000000000003 /* CameraCaptureView.swift */,
-				001001000000000000000004 /* ImageUtilities.swift */,
-				001001000000000000000005 /* PersonSilhouetteGenerator.swift */,
-				001001000000000000000009 /* ClothingForegroundExtractor.swift */,
-				001001000000000000000006 /* TryOnComposer.swift */,
-				001001000000000000000007 /* Info.plist */,
-			);
-			path = Outfitloader;
-			sourceTree = "<group>";
-		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -84,6 +76,9 @@
 			buildRules = (
 			);
 			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				000000000000000000000004 /* Outfitloader */,
 			);
 			name = Outfitloader;
 			productName = Outfitloader;
@@ -138,13 +133,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				002001000000000000000001 /* OutfitloaderApp.swift in Sources */,
-				002001000000000000000002 /* SpikeRootView.swift in Sources */,
-				002001000000000000000003 /* CameraCaptureView.swift in Sources */,
-				002001000000000000000004 /* ImageUtilities.swift in Sources */,
-				002001000000000000000005 /* PersonSilhouetteGenerator.swift in Sources */,
-				002001000000000000000009 /* ClothingForegroundExtractor.swift in Sources */,
-				002001000000000000000006 /* TryOnComposer.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

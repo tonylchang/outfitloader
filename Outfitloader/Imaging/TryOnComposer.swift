@@ -13,16 +13,20 @@ struct ClothingPlacement: Equatable {
     var opacity: CGFloat = 0.96
 }
 
+struct OutfitRenderLayer {
+    var image: UIImage
+    var placement: ClothingPlacement
+    var zIndex: Int
+}
+
 struct TryOnComposer {
     func compose(
         avatar: UIImage,
-        clothing: UIImage,
-        avatarAdjustment: AvatarAdjustment,
-        placement: ClothingPlacement,
+        avatarAdjustment: AvatarAdjustment = AvatarAdjustment(),
+        layers: [OutfitRenderLayer],
         outputSize: CGSize = CGSize(width: 1024, height: 1536)
     ) -> UIImage {
         let avatarImage = avatar.normalizedForProcessing()
-        let clothingImage = clothing.normalizedForProcessing()
 
         let format = UIGraphicsImageRendererFormat()
         format.scale = 1
@@ -51,44 +55,34 @@ struct TryOnComposer {
             )
             cgContext.restoreGState()
 
-            guard clothingImage.size.width > 0 else {
-                return
-            }
+            for layer in layers.sorted(by: { $0.zIndex < $1.zIndex }) {
+                let clothingImage = layer.image.normalizedForProcessing()
+                guard clothingImage.size.width > 0 else {
+                    continue
+                }
 
-            let clothingWidth = avatarRect.width * placement.scale
-            let clothingHeight = clothingWidth * clothingImage.size.height / clothingImage.size.width
-            let center = CGPoint(
-                x: avatarRect.minX + avatarRect.width * placement.anchor.x,
-                y: avatarRect.minY + avatarRect.height * placement.anchor.y
-            )
-
-            cgContext.saveGState()
-            cgContext.translateBy(x: center.x, y: center.y)
-            cgContext.rotate(by: avatarAdjustment.rotationRadians + placement.rotationRadians)
-            cgContext.setAlpha(placement.opacity)
-            clothingImage.draw(
-                in: CGRect(
-                    x: -clothingWidth / 2,
-                    y: -clothingHeight / 2,
-                    width: clothingWidth,
-                    height: clothingHeight
+                let placement = layer.placement
+                let clothingWidth = avatarRect.width * placement.scale
+                let clothingHeight = clothingWidth * clothingImage.size.height / clothingImage.size.width
+                let center = CGPoint(
+                    x: avatarRect.minX + avatarRect.width * placement.anchor.x,
+                    y: avatarRect.minY + avatarRect.height * placement.anchor.y
                 )
-            )
-            cgContext.restoreGState()
+
+                cgContext.saveGState()
+                cgContext.translateBy(x: center.x, y: center.y)
+                cgContext.rotate(by: avatarAdjustment.rotationRadians + placement.rotationRadians)
+                cgContext.setAlpha(placement.opacity)
+                clothingImage.draw(
+                    in: CGRect(
+                        x: -clothingWidth / 2,
+                        y: -clothingHeight / 2,
+                        width: clothingWidth,
+                        height: clothingHeight
+                    )
+                )
+                cgContext.restoreGState()
+            }
         }
-    }
-}
-
-private extension CGRect {
-    func scaledFromCenter(by scale: CGFloat) -> CGRect {
-        let clampedScale = max(scale, 0.01)
-        let scaledSize = CGSize(width: width * clampedScale, height: height * clampedScale)
-
-        return CGRect(
-            x: midX - scaledSize.width / 2,
-            y: midY - scaledSize.height / 2,
-            width: scaledSize.width,
-            height: scaledSize.height
-        )
     }
 }

@@ -144,7 +144,7 @@ final class CameraCaptureViewController: UIViewController, AVCapturePhotoCapture
                 if isGranted {
                     self?.configureSession()
                 } else {
-                    self?.showUnavailableMessage("Camera access is required for this spike.")
+                    self?.showUnavailableMessage("Camera access is required to capture photos.")
                 }
             }
         case .denied, .restricted:
@@ -186,7 +186,7 @@ final class CameraCaptureViewController: UIViewController, AVCapturePhotoCapture
                 self.captureSession.commitConfiguration()
                 self.captureSession.startRunning()
             } catch {
-                self.showUnavailableMessage("Camera setup failed. Use photo import for this run.")
+                self.showUnavailableMessage("Camera setup failed. Use photo import instead.")
             }
         }
     }

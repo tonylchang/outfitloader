@@ -1,5 +1,10 @@
 # Technical Spike: Capture, Silhouette, And Compositing
 
+> **Status (2026-07-03):** Complete and retired. The validated pipeline moved into
+> the MVP app structure (see `MVP_ARCHITECTURE.md` for slice status); the
+> one-screen spike UI was deleted when the real app shell landed. The
+> "Prototype" section below records where each spike component ended up.
+
 ## Goal
 
 Validate the riskiest MVP path with native Apple frameworks:
@@ -11,19 +16,22 @@ Validate the riskiest MVP path with native Apple frameworks:
 
 ## Prototype Added
 
-The spike adds a minimal SwiftUI iOS target:
+The spike added a minimal SwiftUI iOS target with a single spike screen. When the
+MVP app shell was scaffolded, the validated services moved into the real module
+layout and the spike screen was deleted:
 
-- `Outfitloader.xcodeproj`
-- `Outfitloader/OutfitloaderApp.swift`
-- `Outfitloader/SpikeRootView.swift`
-- `Outfitloader/CameraCaptureView.swift`
-- `Outfitloader/PersonSilhouetteGenerator.swift`
-- `Outfitloader/ClothingForegroundExtractor.swift`
-- `Outfitloader/TryOnComposer.swift`
-- `Outfitloader/ImageUtilities.swift`
-- `Outfitloader/Info.plist`
+| Spike file | Where it is now |
+| --- | --- |
+| `Outfitloader/OutfitloaderApp.swift` | `Outfitloader/App/OutfitloaderApp.swift`, rewritten for SwiftData and `AppRootView` |
+| `Outfitloader/SpikeRootView.swift` | Deleted; replaced by the app shell and feature views. Its guided camera sheet was extracted to `Outfitloader/Imaging/CameraCapture/GuidedCameraSheet.swift` |
+| `Outfitloader/CameraCaptureView.swift` | `Outfitloader/Imaging/CameraCapture/CameraCaptureView.swift` |
+| `Outfitloader/PersonSilhouetteGenerator.swift` | `Outfitloader/Imaging/PersonSilhouetteGenerator.swift` |
+| `Outfitloader/ClothingForegroundExtractor.swift` | `Outfitloader/Imaging/ClothingForegroundExtractor.swift` |
+| `Outfitloader/TryOnComposer.swift` | `Outfitloader/Imaging/TryOnComposer.swift`, generalized from one clothing image to N z-ordered layers |
+| `Outfitloader/ImageUtilities.swift` | `Outfitloader/Imaging/ImageUtilities.swift` |
+| `Outfitloader/Info.plist` | `Outfitloader/Info.plist`, unchanged |
 
-The prototype is intentionally not the full MVP app shell. It is a focused technical slice for the avatar/closet/try-on risk.
+The prototype was intentionally not the full MVP app shell. It was a focused technical slice for the avatar/closet/try-on risk.
 
 ## What It Tests
 

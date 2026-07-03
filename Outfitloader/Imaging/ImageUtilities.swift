@@ -38,7 +38,25 @@ extension UIImage {
     }
 }
 
+extension Comparable {
+    func clamped(to limits: ClosedRange<Self>) -> Self {
+        min(max(self, limits.lowerBound), limits.upperBound)
+    }
+}
+
 extension CGRect {
+    func scaledFromCenter(by scale: CGFloat) -> CGRect {
+        let clampedScale = max(scale, 0.01)
+        let scaledSize = CGSize(width: width * clampedScale, height: height * clampedScale)
+
+        return CGRect(
+            x: midX - scaledSize.width / 2,
+            y: midY - scaledSize.height / 2,
+            width: scaledSize.width,
+            height: scaledSize.height
+        )
+    }
+
     static func aspectFit(size: CGSize, in bounds: CGRect) -> CGRect {
         guard size.width > 0, size.height > 0, bounds.width > 0, bounds.height > 0 else {
             return .zero

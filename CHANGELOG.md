@@ -18,6 +18,7 @@ Milestone 1 TestFlight-able MVP work.
 - Lookbook grid, look detail, delete, and reopen-in-Try-On flow.
 - Settings screen with local-only privacy summary and local data deletion.
 - Privacy policy draft in `docs/privacy.html`.
+- App Store Connect preparation notes for the first TestFlight upload.
 - TestFlight readiness checklist for physical-device validation.
 
 ### Notes

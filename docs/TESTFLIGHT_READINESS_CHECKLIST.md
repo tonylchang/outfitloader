@@ -40,6 +40,7 @@ Run this pass on a physical iPhone before uploading the first Milestone 1 build 
 
 ## Release Materials
 
+- [ ] Review `docs/APP_STORE_CONNECT_PREP.md`.
 - [ ] Review and publish `docs/privacy.html` as the privacy policy URL before external TestFlight.
 - [ ] Prepare App Store Connect privacy answers matching the no-backend, no-analytics, on-device data model.
 - [ ] Archive and upload manually from Xcode/App Store Connect.

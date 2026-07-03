@@ -8,9 +8,10 @@ This document translates the active spec into an implementation plan for the Tes
 > generation, the try-on studio, saved-look persistence, lookbook
 > detail/reopen, settings with local data deletion, and avatar body-shape
 > controls. Swift Testing, XCTest, and XCUITest targets now cover the highest-risk
-> model/rendering paths. An initial physical-device run has been completed.
-> Remaining Milestone 1 work is TestFlight packaging: App Store Connect privacy
-> answers, build numbering, archive, and manual upload.
+> model/rendering paths. The full physical-device TestFlight readiness
+> checklist has passed, and release prep (published privacy policy, App Store
+> Connect privacy answers, version/build confirmation) is done. Remaining
+> Milestone 1 work: archive and manual upload.
 > Sections below note where the implementation
 > consolidated the original plan.
 
@@ -470,11 +471,11 @@ Non-responsibilities:
 7. [x] Lookbook gallery and look detail/reopen flow.
 8. [x] Privacy/settings affordances, including local data deletion.
 9. [x] Swift Testing/XCTest/XCUITest target wiring with initial repository, renderer, and launch-smoke coverage.
-10. [ ] Device testing and TestFlight readiness pass.
+10. [x] Device testing and TestFlight readiness pass.
 
 Milestone loose ends before slice 10:
 
-- [ ] Run the physical-device/TestFlight readiness checklist.
+- [x] Run the physical-device/TestFlight readiness checklist.
 
 ## Open Technical Questions
 

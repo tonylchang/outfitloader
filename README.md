@@ -6,8 +6,8 @@ A native iOS/iPadOS app that turns a full-body selfie into a digital avatar and 
 
 Pre-release. Milestone 1, a TestFlight-able MVP, is implementation-complete and being prepared for TestFlight:
 
-- **Done:** app shell, on-device avatar creation (Vision person segmentation), avatar body-shape controls, digital closet with native background removal and replace-photo for clothing items, a try-on studio with tap-to-place and drag positioning, saved looks with lookbook reopen, settings with local data deletion, privacy policy draft, and an initial physical-device run.
-- **Next:** App Store Connect privacy answers, version/build number confirmation, archive, and manual TestFlight upload.
+- **Done:** app shell, on-device avatar creation (Vision person segmentation), avatar body-shape controls, digital closet with native background removal and replace-photo for clothing items, a try-on studio with tap-to-place and drag positioning, saved looks with lookbook reopen, settings with local data deletion, app icon with dark/tinted appearances, published privacy policy, and the full physical-device readiness checklist.
+- **Next:** archive and manual TestFlight upload.
 
 See `docs/MVP_ARCHITECTURE.md` for the implementation plan and current slice status, `docs/TECHNICAL_SPIKE_CAPTURE_COMPOSITING.md` for the spike that validated the pipeline, `docs/APP_STORE_CONNECT_PREP.md` for upload metadata, `docs/TESTFLIGHT_READINESS_CHECKLIST.md` for the final device validation pass, and `docs/privacy.html` for the current privacy policy draft.
 

@@ -54,7 +54,7 @@ enum MediaStoreError: LocalizedError {
 /// Caches (regenerable thumbnails). Filenames never include user-entered names
 /// or body-related descriptors.
 struct MediaStore {
-    private static let ioQueue = DispatchQueue(label: "com.tonychang.outfitloader.media-store")
+    private static let ioQueue = DispatchQueue(label: "net.1x0.outfitloader.media-store")
     private static let thumbnailMaxPixelSize: CGFloat = 600
 
     // MARK: - Writing

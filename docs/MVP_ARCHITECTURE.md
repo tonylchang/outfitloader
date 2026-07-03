@@ -301,7 +301,7 @@ Caches/
 - Do not log image paths, body measurements, thumbnails, masks, or Vision output.
 - Apply iOS file protection to durable media and the SwiftData store where supported.
 - Store regenerable thumbnails/previews in Caches or mark them as excluded from backup.
-- Before external TestFlight, decide whether durable originals should participate in standard encrypted device backup or be excluded for stricter on-device semantics. Do not implement CloudKit sync in the MVP.
+- Durable originals and the local store participate in standard user-controlled encrypted device backups; no backup-exclusion flags are set. Do not implement CloudKit sync in the MVP.
 
 ## SwiftUI Navigation Structure
 
@@ -482,4 +482,4 @@ Milestone loose ends before slice 10:
 - What minimum manual adjustment controls are needed for users to feel the avatar represents their proportions? **Answered for MVP:** avatar height plus shoulders, torso, waist, hips, and legs sliders, rendered as visual-only proportion adjustments.
 - Is tap-to-select enough for first TestFlight, or does drag/drop materially improve the try-on experience? **Both implemented** (tap-to-place from the shelf, drag-to-position on the canvas); validate the feel on device.
 - Should the MVP preserve deleted wardrobe items in existing looks as snapshots, or block deletion while an item is used by a saved look? **Answered:** block deletion while the item is used by saved looks, with an explanation showing how many looks reference it.
-- Should durable original media be excluded from standard iCloud device backup for stricter local-only privacy, or included for user restore safety? **Open:** decide before external TestFlight.
+- Should durable original media be excluded from standard iCloud device backup for stricter local-only privacy, or included for user restore safety? **Answered:** included. Backups are encrypted and user-managed, restore safety wins for a closet users build by hand, and the privacy policy states the nuance explicitly.

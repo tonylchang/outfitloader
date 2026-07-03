@@ -14,6 +14,7 @@
 ## Database Hosting
 
 - User wardrobe, avatar, outfit, and schedule data stays on-device for v1.
+- Durable user media and the local database participate in standard user-controlled device backups; the app does not set backup-exclusion flags on them.
 - No hosted database for the MVP.
 - iCloud / CloudKit sync is not part of the initial infrastructure plan unless explicitly added later.
 

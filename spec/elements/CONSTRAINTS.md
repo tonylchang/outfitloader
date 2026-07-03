@@ -29,6 +29,7 @@
 - Keep App Store privacy details accurate and update them if data practices change.
 - Use data minimization: request only the camera/photo access needed for the current task, and prefer out-of-process pickers where practical.
 - Keep avatar photos, wardrobe photos, segmentation masks, body-shape adjustments, outfits, and schedules on-device for v1.
+- On-device data may be included in the user's own encrypted, user-managed device backups (iCloud Backup or encrypted local backups). This is not treated as off-device sharing, and the privacy policy must state this nuance explicitly.
 - Do not use body, face, depth, camera, or photo-derived data for advertising, marketing, profiling, or use-based data mining.
 - Do not share user photos, body data, wardrobe data, or derived avatar data with third-party AI services without a spec update, explicit user consent, and a privacy review.
 - Do not include product analytics or behavioral tracking.

@@ -25,10 +25,10 @@ This document translates the active spec into an implementation plan for the Tes
 
 ## Module Layout
 
-Layout as implemented. The Xcode target uses a file-system-synchronized folder, so files added under `Outfitloader/` join the target automatically without project-file edits.
+Layout as implemented. The Xcode target uses a file-system-synchronized folder, so files added under `outfitloader/` join the target automatically without project-file edits.
 
 ```text
-Outfitloader/
+outfitloader/
   App/
     OutfitloaderApp.swift
     AppRootView.swift

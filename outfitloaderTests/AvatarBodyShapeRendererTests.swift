@@ -1,6 +1,6 @@
 import Testing
 import UIKit
-@testable import Outfitloader
+@testable import outfitloader
 
 @MainActor
 struct AvatarBodyShapeRendererTests {

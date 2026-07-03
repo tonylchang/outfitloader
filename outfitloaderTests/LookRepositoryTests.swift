@@ -1,7 +1,7 @@
 import SwiftData
 import UIKit
 import XCTest
-@testable import Outfitloader
+@testable import outfitloader
 
 @MainActor
 final class LookRepositoryTests: XCTestCase {

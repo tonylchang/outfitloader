@@ -28,6 +28,10 @@ See `docs/MVP_ARCHITECTURE.md` for the implementation plan and current slice sta
 
 Open `Outfitloader.xcodeproj` in Xcode 26 or later and run the `Outfitloader` scheme. Camera capture requires a physical device; photo import works in the simulator. The project uses a file-system-synchronized folder, so new files under `Outfitloader/` join the target automatically.
 
+## Testing
+
+Run the `Outfitloader` scheme tests in Xcode, or from the command line with `xcodebuild test`. The initial suite includes Swift Testing coverage for avatar body-shape rendering, XCTest coverage for saved-look persistence and delete blocking, and an XCUITest launch smoke test.
+
 ## Spec-Driven Development
 
 The project specification lives in `spec/elements/`, with one file per concern: purpose, features, stack, UI, infra, constraints, project plan, versioning, and context. It is the source of truth for scope and constraints. Agent guidance lives in `AGENTS.md`. The `/spec-init`, `/spec-save-original`, `/spec-update`, and `/spec-check` workflows are defined in `spec/workflows/`, and `spec/original/` preserves the initial spec baseline.

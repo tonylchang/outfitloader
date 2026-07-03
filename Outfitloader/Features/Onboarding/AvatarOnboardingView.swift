@@ -69,7 +69,7 @@ struct AvatarOnboardingView: View {
                 .font(.system(size: 44))
                 .foregroundStyle(.tint)
 
-            Text("Outfitloader builds a try-on avatar from one full-body selfie. Your photo and silhouette stay on this device.")
+            Text("outfitloader builds a try-on avatar from one full-body selfie. Your photo and silhouette stay on this device.")
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)

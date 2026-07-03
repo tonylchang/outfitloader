@@ -7,7 +7,10 @@ This document translates the active spec into an implementation plan for the Tes
 > CRUD with clothing foreground extraction, avatar onboarding with silhouette
 > generation, the try-on studio, saved-look persistence, lookbook
 > detail/reopen, settings with local data deletion, and avatar body-shape
-> controls. An initial physical-device run has been completed. Remaining Milestone 1 work is TestFlight packaging: App Store Connect privacy answers, build numbering, archive, and manual upload.
+> controls. Swift Testing, XCTest, and XCUITest targets now cover the highest-risk
+> model/rendering paths. An initial physical-device run has been completed.
+> Remaining Milestone 1 work is TestFlight packaging: App Store Connect privacy
+> answers, build numbering, archive, and manual upload.
 > Sections below note where the implementation
 > consolidated the original plan.
 
@@ -92,7 +95,6 @@ Suggested fields:
 - `isActive: Bool`
 - `sourceImage: ImageAsset?`
 - `silhouetteImage: ImageAsset?`
-- `previewImage: ImageAsset?`
 - `processingStatusRawValue: String`
 - `heightCentimeters: Double?`
 - `shoulderAdjustment: Double`
@@ -100,13 +102,11 @@ Suggested fields:
 - `waistAdjustment: Double`
 - `hipAdjustment: Double`
 - `legAdjustment: Double`
-- `poseConfidence: Double?`
-- `bodyLandmarksJSON: Data?`
 
 Notes:
 
 - MVP should support one active avatar, but the model should not prevent adding avatar history later.
-- Store body landmark data as encoded app-owned geometry, not as a biometric identifier.
+- Pose landmarks and confidence values are not stored in the MVP because pose detection is not implemented yet.
 - Body adjustment values are UI controls for visual fit, not health or sizing measurements.
 
 ### `ClosetCategory`
@@ -153,7 +153,6 @@ Suggested fields:
 - `originalImage: ImageAsset?`
 - `processedImage: ImageAsset?`
 - `thumbnailImage: ImageAsset?`
-- `maskImage: ImageAsset?`
 - `dominantColorName: String?`
 - `notes: String?`
 - `sortIndex: Int`
@@ -162,7 +161,7 @@ Suggested fields:
 Notes:
 
 - `processedImage` stores the transparent native foreground cutout when Vision succeeds, falling back to the original image for display/composition when extraction cannot separate the item.
-- `maskImage` is optional and remains available for later mask storage or Phase 1 refinement.
+- Mask storage is deferred until Phase 1 proves the app needs editable/refinable masks.
 - Deleting an item removes it from new outfit assembly, but MVP blocks deletion while the item is used by saved looks. Snapshot preservation is deferred.
 
 ### `OutfitLook`
@@ -218,7 +217,7 @@ Notes:
 
 ### `ImageAsset`
 
-Represents a locally stored image or mask file.
+Represents a locally stored image or generated derivative.
 
 Suggested fields:
 
@@ -239,10 +238,8 @@ Recommended image kinds:
 
 - `avatarOriginal`
 - `avatarSilhouette`
-- `avatarPreview`
 - `wardrobeOriginal`
 - `wardrobeProcessed`
-- `wardrobeMask`
 - `wardrobeThumbnail`
 - `outfitPreview`
 
@@ -268,12 +265,10 @@ Application Support/
         {avatarID}/
           original.jpg
           silhouette.png
-          preview.png
       Wardrobe/
         {itemID}/
           original.jpg
           processed.png
-          mask.png
       Outfits/
         {lookID}/
           preview.jpg
@@ -287,7 +282,7 @@ Caches/
 ### Format Rules
 
 - Preserve camera/photo imports as HEIC when practical, otherwise JPEG. The current `MediaStore` re-encodes imports to JPEG (quality 0.9) after orientation normalization; HEIC passthrough is a possible later optimization.
-- Use PNG for assets that need alpha, such as masks, silhouettes, and transparent processed clothing images.
+- Use PNG for assets that need alpha, such as silhouettes and transparent processed clothing images.
 - Use JPEG for thumbnails and outfit previews unless transparency is required.
 - Generate thumbnails at stable sizes for grid performance, such as small grid, large grid, and detail preview variants if profiling shows the need.
 
@@ -395,8 +390,8 @@ Non-responsibilities:
 
 Responsibilities:
 
-- Run native Vision requests for person segmentation, body pose landmarks, and confidence values where feasible.
-- Return plain value types such as masks, landmarks, bounding boxes, and confidence.
+- Run native Vision requests for person segmentation and clothing foreground extraction in the MVP.
+- Return plain value types such as transparent images, masks, bounding boxes, and confidence values when the active request produces them.
 
 Non-responsibilities:
 
@@ -409,7 +404,7 @@ Non-responsibilities:
 Responsibilities:
 
 - Convert the original selfie plus Vision outputs into an `AvatarRenderDescriptor`.
-- Produce silhouette/preview images for the MVP.
+- Produce a silhouette image for the MVP.
 - Apply user body-adjustment values to the render descriptor.
 - Report whether the photo quality is usable enough for the MVP.
 
@@ -424,14 +419,13 @@ Responsibilities:
 
 - Normalize imported clothing photos.
 - Generate thumbnails and a processed image suitable for try-on composition.
-- Preserve optional mask hooks for later segmentation work.
 - Coordinate with `ClothingForegroundExtractor` when the product scope includes native background removal.
 
 MVP boundary:
 
 - Lightweight native foreground extraction is in v1 and should produce a transparent processed image when Vision can separate the clothing item from the background.
 - If extraction fails, the app can fall back to the original image without blocking item creation.
-- Phase 1 can refine masks, edge cleanup, and capture guidance without changing `WardrobeItem`, `ImageAsset`, or try-on UI contracts.
+- Phase 1 can add editable mask storage, edge cleanup, and capture guidance if validation shows the MVP cutouts are not good enough.
 
 Spike update:
 
@@ -475,15 +469,16 @@ Non-responsibilities:
 6. [x] Save look flow that creates `OutfitLook`, `OutfitSlot`, and preview image.
 7. [x] Lookbook gallery and look detail/reopen flow.
 8. [x] Privacy/settings affordances, including local data deletion.
-9. [ ] Device testing and TestFlight readiness pass.
+9. [x] Swift Testing/XCTest/XCUITest target wiring with initial repository, renderer, and launch-smoke coverage.
+10. [ ] Device testing and TestFlight readiness pass.
 
-Milestone loose ends before slice 9:
+Milestone loose ends before slice 10:
 
 - [ ] Run the physical-device/TestFlight readiness checklist.
 
 ## Open Technical Questions
 
-- Can native Vision produce a good enough person mask from typical full-body selfies? **Answered in the spike:** good enough to proceed; silhouette edges are rough and may need Phase 1 refinement. Body-landmark quality remains unvalidated.
+- Can native Vision produce a good enough person mask from typical full-body selfies? **Answered in the spike:** good enough to proceed; silhouette edges are rough and may need Phase 1 refinement. Body pose detection is not implemented in the MVP.
 - What minimum manual adjustment controls are needed for users to feel the avatar represents their proportions? **Answered for MVP:** avatar height plus shoulders, torso, waist, hips, and legs sliders, rendered as visual-only proportion adjustments.
 - Is tap-to-select enough for first TestFlight, or does drag/drop materially improve the try-on experience? **Both implemented** (tap-to-place from the shelf, drag-to-position on the canvas); validate the feel on device.
 - Should the MVP preserve deleted wardrobe items in existing looks as snapshots, or block deletion while an item is used by a saved look? **Answered:** block deletion while the item is used by saved looks, with an explanation showing how many looks reference it.

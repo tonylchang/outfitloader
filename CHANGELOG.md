@@ -17,9 +17,16 @@ Milestone 1 TestFlight-able MVP work.
 - Saved looks with generated previews.
 - Lookbook grid, look detail, delete, and reopen-in-Try-On flow.
 - Settings screen with local-only privacy summary and local data deletion.
+- Swift Testing, XCTest, and XCUITest targets with initial coverage for avatar rendering, saved-look persistence, delete blocking, and app launch.
 - Privacy policy draft in `docs/privacy.html`.
 - App Store Connect preparation notes for the first TestFlight upload.
 - TestFlight readiness checklist for physical-device validation.
+
+### Changed
+
+- Removed unpopulated avatar pose/preview and wardrobe mask schema fields before the first tagged release.
+- Consolidated wardrobe add/replace photo acquisition and foreground extraction state into a shared view model.
+- Serialized local media file IO through a single `MediaStore` queue.
 
 ### Notes
 

@@ -54,62 +54,79 @@ enum MediaStoreError: LocalizedError {
 /// Caches (regenerable thumbnails). Filenames never include user-entered names
 /// or body-related descriptors.
 struct MediaStore {
+    private static let ioQueue = DispatchQueue(label: "com.tonychang.outfitloader.media-store")
     private static let thumbnailMaxPixelSize: CGFloat = 600
 
     // MARK: - Writing
 
     func writeAvatarOriginal(_ image: UIImage, avatarID: UUID, source: ImageSource) throws -> ImageAssetDraft {
-        try writeJPEG(image, relativePath: "Avatars/\(avatarID.uuidString)/original.jpg", kind: .avatarOriginal, source: source)
+        try Self.ioQueue.sync {
+            try writeJPEG(image, relativePath: "Avatars/\(avatarID.uuidString)/original.jpg", kind: .avatarOriginal, source: source)
+        }
     }
 
     func writeAvatarSilhouette(_ image: UIImage, avatarID: UUID) throws -> ImageAssetDraft {
-        try writePNG(image, relativePath: "Avatars/\(avatarID.uuidString)/silhouette.png", kind: .avatarSilhouette, source: .generated)
+        try Self.ioQueue.sync {
+            try writePNG(image, relativePath: "Avatars/\(avatarID.uuidString)/silhouette.png", kind: .avatarSilhouette, source: .generated)
+        }
     }
 
     func writeWardrobeOriginal(_ image: UIImage, itemID: UUID, source: ImageSource) throws -> ImageAssetDraft {
-        try writeJPEG(image, relativePath: "Wardrobe/\(itemID.uuidString)/original.jpg", kind: .wardrobeOriginal, source: source)
+        try Self.ioQueue.sync {
+            try writeJPEG(image, relativePath: "Wardrobe/\(itemID.uuidString)/original.jpg", kind: .wardrobeOriginal, source: source)
+        }
     }
 
     func writeWardrobeReplacementOriginal(_ image: UIImage, itemID: UUID, source: ImageSource) throws -> ImageAssetDraft {
-        let assetID = UUID()
-        return try writeJPEG(
-            image,
-            relativePath: "Wardrobe/\(itemID.uuidString)/Originals/\(assetID.uuidString).jpg",
-            kind: .wardrobeOriginal,
-            source: source,
-            assetID: assetID
-        )
+        try Self.ioQueue.sync {
+            let assetID = UUID()
+            return try writeJPEG(
+                image,
+                relativePath: "Wardrobe/\(itemID.uuidString)/Originals/\(assetID.uuidString).jpg",
+                kind: .wardrobeOriginal,
+                source: source,
+                assetID: assetID
+            )
+        }
     }
 
     func writeWardrobeProcessed(_ image: UIImage, itemID: UUID) throws -> ImageAssetDraft {
-        try writePNG(image, relativePath: "Wardrobe/\(itemID.uuidString)/processed.png", kind: .wardrobeProcessed, source: .generated)
+        try Self.ioQueue.sync {
+            try writePNG(image, relativePath: "Wardrobe/\(itemID.uuidString)/processed.png", kind: .wardrobeProcessed, source: .generated)
+        }
     }
 
     func writeWardrobeReplacementProcessed(_ image: UIImage, itemID: UUID) throws -> ImageAssetDraft {
-        let assetID = UUID()
-        return try writePNG(
-            image,
-            relativePath: "Wardrobe/\(itemID.uuidString)/Processed/\(assetID.uuidString).png",
-            kind: .wardrobeProcessed,
-            source: .generated,
-            assetID: assetID
-        )
+        try Self.ioQueue.sync {
+            let assetID = UUID()
+            return try writePNG(
+                image,
+                relativePath: "Wardrobe/\(itemID.uuidString)/Processed/\(assetID.uuidString).png",
+                kind: .wardrobeProcessed,
+                source: .generated,
+                assetID: assetID
+            )
+        }
     }
 
     func writeOutfitPreview(_ image: UIImage, lookID: UUID) throws -> ImageAssetDraft {
-        try writeJPEG(image, relativePath: "Outfits/\(lookID.uuidString)/preview.jpg", kind: .outfitPreview, source: .generated)
+        try Self.ioQueue.sync {
+            try writeJPEG(image, relativePath: "Outfits/\(lookID.uuidString)/preview.jpg", kind: .outfitPreview, source: .generated)
+        }
     }
 
     func writeThumbnail(from image: UIImage) throws -> ImageAssetDraft {
-        let assetID = UUID()
-        let thumbnail = image.resizedToFit(maxPixelSize: Self.thumbnailMaxPixelSize)
-        return try writeJPEG(
-            thumbnail,
-            relativePath: "Thumbnails/\(assetID.uuidString).jpg",
-            kind: .wardrobeThumbnail,
-            source: .generated,
-            assetID: assetID
-        )
+        try Self.ioQueue.sync {
+            let assetID = UUID()
+            let thumbnail = image.resizedToFit(maxPixelSize: Self.thumbnailMaxPixelSize)
+            return try writeJPEG(
+                thumbnail,
+                relativePath: "Thumbnails/\(assetID.uuidString).jpg",
+                kind: .wardrobeThumbnail,
+                source: .generated,
+                assetID: assetID
+            )
+        }
     }
 
     // MARK: - Reading
@@ -119,6 +136,12 @@ struct MediaStore {
     }
 
     func loadImage(relativePath: String, kindRawValue: String) -> UIImage? {
+        Self.ioQueue.sync {
+            loadImageUnlocked(relativePath: relativePath, kindRawValue: kindRawValue)
+        }
+    }
+
+    private func loadImageUnlocked(relativePath: String, kindRawValue: String) -> UIImage? {
         guard let kind = ImageAssetKind(rawValue: kindRawValue),
               let url = try? fileURL(relativePath: relativePath, kind: kind)
         else {
@@ -139,6 +162,12 @@ struct MediaStore {
     }
 
     func deleteFile(relativePath: String, kind: ImageAssetKind) {
+        Self.ioQueue.sync {
+            deleteFileUnlocked(relativePath: relativePath, kind: kind)
+        }
+    }
+
+    private func deleteFileUnlocked(relativePath: String, kind: ImageAssetKind) {
         guard let url = try? fileURL(relativePath: relativePath, kind: kind) else {
             return
         }
@@ -147,24 +176,32 @@ struct MediaStore {
     }
 
     func deleteAvatarMedia(avatarID: UUID) {
-        deleteMediaDirectory("Avatars/\(avatarID.uuidString)")
+        Self.ioQueue.sync {
+            deleteMediaDirectoryUnlocked("Avatars/\(avatarID.uuidString)")
+        }
     }
 
     func deleteWardrobeMedia(itemID: UUID) {
-        deleteMediaDirectory("Wardrobe/\(itemID.uuidString)")
+        Self.ioQueue.sync {
+            deleteMediaDirectoryUnlocked("Wardrobe/\(itemID.uuidString)")
+        }
     }
 
     func deleteOutfitMedia(lookID: UUID) {
-        deleteMediaDirectory("Outfits/\(lookID.uuidString)")
+        Self.ioQueue.sync {
+            deleteMediaDirectoryUnlocked("Outfits/\(lookID.uuidString)")
+        }
     }
 
     func deleteAllMedia() {
-        if let root = try? mediaRoot() {
-            try? FileManager.default.removeItem(at: root)
-        }
+        Self.ioQueue.sync {
+            if let root = try? mediaRoot() {
+                try? FileManager.default.removeItem(at: root)
+            }
 
-        if let root = try? cachesRoot() {
-            try? FileManager.default.removeItem(at: root)
+            if let root = try? cachesRoot() {
+                try? FileManager.default.removeItem(at: root)
+            }
         }
     }
 
@@ -274,7 +311,7 @@ struct MediaStore {
         return base.appending(path: "Outfitloader", directoryHint: .isDirectory)
     }
 
-    private func deleteMediaDirectory(_ relativePath: String) {
+    private func deleteMediaDirectoryUnlocked(_ relativePath: String) {
         guard let root = try? mediaRoot() else {
             return
         }

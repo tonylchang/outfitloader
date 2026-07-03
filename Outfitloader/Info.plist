@@ -5,7 +5,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
-	<string>Outfitloader</string>
+	<string>outfitloader</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -23,9 +23,9 @@
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSCameraUsageDescription</key>
-	<string>Outfitloader uses the camera to capture your avatar selfie and clothing photos on device.</string>
+	<string>outfitloader uses the camera to capture your avatar selfie and clothing photos on device.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>Outfitloader lets you choose photos to build your avatar and virtual closet.</string>
+	<string>outfitloader lets you choose photos to build your avatar and virtual closet.</string>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 	<key>UILaunchScreen</key>

@@ -4,10 +4,8 @@ import SwiftData
 enum ImageAssetKind: String, CaseIterable {
     case avatarOriginal
     case avatarSilhouette
-    case avatarPreview
     case wardrobeOriginal
     case wardrobeProcessed
-    case wardrobeMask
     case wardrobeThumbnail
     case outfitPreview
 
@@ -15,8 +13,7 @@ enum ImageAssetKind: String, CaseIterable {
         switch self {
         case .avatarOriginal, .wardrobeOriginal:
             return false
-        case .avatarSilhouette, .avatarPreview, .wardrobeProcessed, .wardrobeMask,
-             .wardrobeThumbnail, .outfitPreview:
+        case .avatarSilhouette, .wardrobeProcessed, .wardrobeThumbnail, .outfitPreview:
             return true
         }
     }

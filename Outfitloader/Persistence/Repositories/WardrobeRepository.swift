@@ -88,7 +88,7 @@ struct WardrobeRepository {
         processedImage: UIImage?,
         capturedFrom source: ImageSource
     ) throws {
-        let oldAssets = [item.originalImage, item.processedImage, item.thumbnailImage, item.maskImage].compactMap { $0 }
+        let oldAssets = [item.originalImage, item.processedImage, item.thumbnailImage].compactMap { $0 }
         var newDrafts: [ImageAssetDraft] = []
 
         let originalDraft: ImageAssetDraft
@@ -115,7 +115,6 @@ struct WardrobeRepository {
         item.originalImage = ImageAsset(draft: originalDraft)
         item.processedImage = processedDraft.map { ImageAsset(draft: $0) }
         item.thumbnailImage = ImageAsset(draft: thumbnailDraft)
-        item.maskImage = nil
         item.updatedAt = .now
 
         for asset in oldAssets {
@@ -141,7 +140,7 @@ struct WardrobeRepository {
             throw WardrobeRepositoryError.itemUsedInLooks(count: usageCount)
         }
 
-        let assets = [item.originalImage, item.processedImage, item.thumbnailImage, item.maskImage]
+        let assets = [item.originalImage, item.processedImage, item.thumbnailImage]
         for asset in assets.compactMap({ $0 }) {
             mediaStore.deleteMedia(for: asset)
         }

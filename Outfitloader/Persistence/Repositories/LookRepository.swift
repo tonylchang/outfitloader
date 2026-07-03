@@ -119,11 +119,7 @@ struct LookRepository {
     }
 
     func hydrateComposition(from look: OutfitLook) async throws -> HydratedLookComposition {
-        guard let avatarAsset = look.avatarProfile?.silhouetteImage ?? look.avatarProfile?.sourceImage else {
-            throw LookRepositoryError.missingAvatar
-        }
-
-        guard await loadImage(for: avatarAsset) != nil else {
+        guard look.avatarProfile?.silhouetteImage ?? look.avatarProfile?.sourceImage != nil else {
             throw LookRepositoryError.missingAvatar
         }
 

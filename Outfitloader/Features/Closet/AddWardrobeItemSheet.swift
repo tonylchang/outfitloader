@@ -14,15 +14,9 @@ struct AddWardrobeItemSheet: View {
 
     @State private var pickerItem: PhotosPickerItem?
     @State private var showingCamera = false
-    @State private var originalImage: UIImage?
-    @State private var extractedImage: UIImage?
-    @State private var useExtracted = true
-    @State private var isExtracting = false
-    @State private var extractionFailed = false
+    @State private var photoSelection = WardrobePhotoSelection()
     @State private var name = ""
     @State private var selectedKind: CategoryKind = .tops
-    @State private var imageSource: ImageSource = .photoLibrary
-    @State private var errorMessage: String?
 
     var body: some View {
         NavigationStack {
@@ -43,7 +37,7 @@ struct AddWardrobeItemSheet: View {
                     Button("Save") {
                         save()
                     }
-                    .disabled(originalImage == nil || isExtracting)
+                    .disabled(photoSelection.originalImage == nil || photoSelection.isExtracting)
                 }
             }
             .fullScreenCover(isPresented: $showingCamera) {
@@ -52,24 +46,24 @@ struct AddWardrobeItemSheet: View {
                     title: "Clothing Capture",
                     guidance: "Place one item flat in frame with as plain a background as possible."
                 ) { image in
-                    handleImage(image, from: .camera)
+                    photoSelection.handleImage(image, from: .camera)
                 }
             }
             .onChange(of: pickerItem) { _, newItem in
                 Task {
-                    await loadPickedImage(newItem)
+                    await photoSelection.loadPickedImage(newItem)
                 }
             }
             .alert(
                 "Couldn't Save Item",
                 isPresented: Binding(
-                    get: { errorMessage != nil },
-                    set: { if !$0 { errorMessage = nil } }
+                    get: { photoSelection.errorMessage != nil },
+                    set: { if !$0 { photoSelection.errorMessage = nil } }
                 )
             ) {
                 Button("OK", role: .cancel) {}
             } message: {
-                Text(errorMessage ?? "")
+                Text(photoSelection.errorMessage ?? "")
             }
         }
     }
@@ -92,7 +86,7 @@ struct AddWardrobeItemSheet: View {
                 .buttonStyle(.bordered)
             }
 
-            if isExtracting {
+            if photoSelection.isExtracting {
                 HStack(spacing: 10) {
                     ProgressView()
                     Text("Removing the background on device…")
@@ -101,7 +95,7 @@ struct AddWardrobeItemSheet: View {
                 }
             }
 
-            if let preview = previewImage {
+            if let preview = photoSelection.previewImage {
                 HStack {
                     Spacer()
                     Image(uiImage: preview)
@@ -112,9 +106,9 @@ struct AddWardrobeItemSheet: View {
                 }
             }
 
-            if extractedImage != nil {
-                Toggle("Use background-removed cutout", isOn: $useExtracted)
-            } else if extractionFailed {
+            if photoSelection.extractedImage != nil {
+                Toggle("Use background-removed cutout", isOn: useExtractedBinding)
+            } else if photoSelection.extractionFailed {
                 Text("The item couldn't be separated from its background, so the full photo will be used. A plain, contrasting background helps.")
                     .font(.footnote)
                     .foregroundStyle(.secondary)
@@ -135,64 +129,17 @@ struct AddWardrobeItemSheet: View {
         }
     }
 
-    private var previewImage: UIImage? {
-        if let extractedImage, useExtracted {
-            return extractedImage
+    private var useExtractedBinding: Binding<Bool> {
+        Binding {
+            photoSelection.useExtracted
+        } set: { newValue in
+            photoSelection.useExtracted = newValue
         }
-
-        return originalImage
-    }
-
-    @MainActor
-    private func loadPickedImage(_ item: PhotosPickerItem?) async {
-        guard let item else {
-            return
-        }
-
-        guard let data = try? await item.loadTransferable(type: Data.self),
-              let image = UIImage(data: data)
-        else {
-            errorMessage = "That photo couldn't be loaded. Try a different one."
-            return
-        }
-
-        handleImage(image, from: .photoLibrary)
-    }
-
-    @MainActor
-    private func handleImage(_ image: UIImage, from source: ImageSource) {
-        let resized = image.resizedToFit(maxPixelSize: 1600)
-        originalImage = resized
-        extractedImage = nil
-        extractionFailed = false
-        useExtracted = true
-        imageSource = source
-        isExtracting = true
-
-        Task {
-            await extractForeground(from: resized)
-        }
-    }
-
-    @MainActor
-    private func extractForeground(from image: UIImage) async {
-        do {
-            let foreground = try await Task.detached(priority: .userInitiated) {
-                try ClothingForegroundExtractor().extractForeground(from: image)
-            }.value
-
-            extractedImage = foreground
-        } catch {
-            extractedImage = nil
-            extractionFailed = true
-        }
-
-        isExtracting = false
     }
 
     @MainActor
     private func save() {
-        guard let originalImage else {
+        guard let originalImage = photoSelection.originalImage else {
             return
         }
 
@@ -206,12 +153,12 @@ struct AddWardrobeItemSheet: View {
                 kind: selectedKind,
                 category: category,
                 originalImage: originalImage,
-                processedImage: useExtracted ? extractedImage : nil,
-                capturedFrom: imageSource
+                processedImage: photoSelection.processedImageForSave,
+                capturedFrom: photoSelection.imageSource
             )
             dismiss()
         } catch {
-            errorMessage = error.localizedDescription
+            photoSelection.errorMessage = error.localizedDescription
         }
     }
 }

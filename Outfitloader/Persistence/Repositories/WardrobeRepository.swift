@@ -2,6 +2,18 @@ import Foundation
 import SwiftData
 import UIKit
 
+enum WardrobeRepositoryError: LocalizedError {
+    case itemUsedInLooks(count: Int)
+
+    var errorDescription: String? {
+        switch self {
+        case .itemUsedInLooks(let count):
+            let label = count == 1 ? "look" : "looks"
+            return "This item is used in \(count) saved \(label). Delete those looks before deleting this item."
+        }
+    }
+}
+
 /// Owns the transaction that keeps wardrobe SwiftData rows and media files
 /// consistent. Deletion removes both the rows and the underlying files.
 @MainActor
@@ -54,7 +66,28 @@ struct WardrobeRepository {
         return item
     }
 
+    func savedLookUsageCount(for item: WardrobeItem) throws -> Int {
+        let slots = try modelContext.fetch(FetchDescriptor<OutfitSlot>())
+        let lookIDs = slots.reduce(into: Set<UUID>()) { result, slot in
+            guard slot.wardrobeItem?.id == item.id,
+                  let look = slot.look,
+                  !look.isArchived
+            else {
+                return
+            }
+
+            result.insert(look.id)
+        }
+
+        return lookIDs.count
+    }
+
     func deleteItem(_ item: WardrobeItem) throws {
+        let usageCount = try savedLookUsageCount(for: item)
+        guard usageCount == 0 else {
+            throw WardrobeRepositoryError.itemUsedInLooks(count: usageCount)
+        }
+
         let assets = [item.originalImage, item.processedImage, item.thumbnailImage, item.maskImage]
         for asset in assets.compactMap({ $0 }) {
             mediaStore.deleteMedia(for: asset)

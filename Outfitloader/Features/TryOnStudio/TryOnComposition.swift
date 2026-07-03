@@ -33,6 +33,10 @@ final class TryOnComposition {
         layers.sorted { $0.zIndex < $1.zIndex }
     }
 
+    var canSave: Bool {
+        !layers.isEmpty
+    }
+
     var isPristine: Bool {
         layers.isEmpty && avatarAdjustment == AvatarAdjustment()
     }
@@ -83,6 +87,12 @@ final class TryOnComposition {
         }
 
         change(&layers[index].placement)
+    }
+
+    func loadSavedLook(avatarAdjustment: AvatarAdjustment, layers savedLayers: [TryOnLayer]) {
+        self.avatarAdjustment = avatarAdjustment
+        layers = savedLayers
+        selection = savedLayers.first.map { .layer($0.id) } ?? .avatar
     }
 
     func reset() {

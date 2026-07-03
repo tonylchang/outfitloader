@@ -11,6 +11,9 @@ final class OutfitLook {
     @Relationship(deleteRule: .cascade, inverse: \OutfitSlot.look)
     var slots: [OutfitSlot]
     @Relationship(deleteRule: .cascade) var previewImage: ImageAsset?
+    var avatarScale: Double = 1
+    var avatarRotationDegrees: Double = 0
+    var avatarOpacity: Double = 1
     var notes: String?
     var sortIndex: Int
     var isArchived: Bool
@@ -20,6 +23,9 @@ final class OutfitLook {
         createdAt: Date = .now,
         updatedAt: Date = .now,
         name: String,
+        avatarScale: Double = 1,
+        avatarRotationDegrees: Double = 0,
+        avatarOpacity: Double = 1,
         notes: String? = nil,
         sortIndex: Int = 0,
         isArchived: Bool = false
@@ -29,6 +35,9 @@ final class OutfitLook {
         self.updatedAt = updatedAt
         self.name = name
         self.slots = []
+        self.avatarScale = avatarScale
+        self.avatarRotationDegrees = avatarRotationDegrees
+        self.avatarOpacity = avatarOpacity
         self.notes = notes
         self.sortIndex = sortIndex
         self.isArchived = isArchived

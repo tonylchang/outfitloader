@@ -8,6 +8,7 @@ import UIKit
 struct TryOnStudioView: View {
     @Bindable var composition: TryOnComposition
 
+    @Environment(\.modelContext) private var modelContext
     @Environment(\.mediaStore) private var mediaStore
     @Query(filter: #Predicate<AvatarProfile> { $0.isActive })
     private var activeAvatars: [AvatarProfile]
@@ -20,6 +21,7 @@ struct TryOnStudioView: View {
 
     @State private var avatarImage: UIImage?
     @State private var shelfFilter: CategoryFilter = .all
+    @State private var showingSaveSheet = false
 
     private var avatarDisplayAsset: ImageAsset? {
         guard let avatar = activeAvatars.first else {
@@ -50,7 +52,12 @@ struct TryOnStudioView: View {
             .padding(.bottom, 8)
             .navigationTitle("Try On")
             .toolbar {
-                ToolbarItem(placement: .primaryAction) {
+                ToolbarItemGroup(placement: .primaryAction) {
+                    Button("Save", systemImage: "square.and.arrow.down") {
+                        showingSaveSheet = true
+                    }
+                    .disabled(!composition.canSave || avatarImage == nil || activeAvatars.first == nil)
+
                     Button("Reset", systemImage: "arrow.counterclockwise") {
                         composition.reset()
                     }
@@ -60,7 +67,19 @@ struct TryOnStudioView: View {
             .task(id: avatarDisplayAsset?.relativePath) {
                 await loadAvatarImage()
             }
+            .sheet(isPresented: $showingSaveSheet) {
+                SaveLookSheet(defaultName: defaultLookName) { name in
+                    try saveLook(named: name)
+                }
+            }
         }
+    }
+
+    private var defaultLookName: String {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .medium
+        formatter.timeStyle = .none
+        return "Look \(formatter.string(from: .now))"
     }
 
     private var shelf: some View {
@@ -141,6 +160,83 @@ struct TryOnStudioView: View {
             }
 
             composition.place(itemID: itemID, name: itemName, kind: kind, image: image)
+        }
+    }
+
+    private func saveLook(named name: String) throws {
+        guard let avatar = activeAvatars.first, let avatarImage else {
+            throw LookRepositoryError.missingAvatar
+        }
+
+        let repository = LookRepository(modelContext: modelContext, mediaStore: mediaStore)
+        try repository.createLook(
+            named: name,
+            avatar: avatar,
+            avatarImage: avatarImage,
+            composition: composition,
+            wardrobeItems: items
+        )
+    }
+}
+
+private struct SaveLookSheet: View {
+    let defaultName: String
+    let onSave: (String) throws -> Void
+
+    @Environment(\.dismiss) private var dismiss
+    @State private var name: String
+    @State private var errorMessage: String?
+
+    init(defaultName: String, onSave: @escaping (String) throws -> Void) {
+        self.defaultName = defaultName
+        self.onSave = onSave
+        _name = State(initialValue: defaultName)
+    }
+
+    var body: some View {
+        NavigationStack {
+            Form {
+                Section("Name") {
+                    TextField("Look name", text: $name)
+                        .textInputAutocapitalization(.words)
+                }
+            }
+            .navigationTitle("Save Look")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") {
+                        dismiss()
+                    }
+                }
+
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Save") {
+                        save()
+                    }
+                    .disabled(name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                }
+            }
+            .alert(
+                "Couldn't Save Look",
+                isPresented: Binding(
+                    get: { errorMessage != nil },
+                    set: { if !$0 { errorMessage = nil } }
+                )
+            ) {
+                Button("OK", role: .cancel) {}
+            } message: {
+                Text(errorMessage ?? "")
+            }
+        }
+    }
+
+    private func save() {
+        do {
+            try onSave(name)
+            dismiss()
+        } catch {
+            errorMessage = error.localizedDescription
         }
     }
 }

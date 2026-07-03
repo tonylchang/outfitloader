@@ -8,9 +8,21 @@ struct WardrobeItemDetailView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.mediaStore) private var mediaStore
     @Query(sort: \ClosetCategory.sortIndex) private var categories: [ClosetCategory]
+    @Query(
+        filter: #Predicate<OutfitLook> { $0.isArchived == false },
+        sort: \OutfitLook.createdAt,
+        order: .reverse
+    )
+    private var looks: [OutfitLook]
 
     @State private var showingDeleteConfirmation = false
     @State private var errorMessage: String?
+
+    private var usageCount: Int {
+        looks.filter { look in
+            look.slots.contains { $0.wardrobeItem?.id == item.id }
+        }.count
+    }
 
     var body: some View {
         Form {
@@ -39,7 +51,11 @@ struct WardrobeItemDetailView: View {
                     showingDeleteConfirmation = true
                 }
             } footer: {
-                Text("Deleting removes the item and its photos from this device.")
+                if usageCount > 0 {
+                    Text("This item is used in \(usageCount) saved \(usageCount == 1 ? "look" : "looks"). Delete those looks before deleting this item.")
+                } else {
+                    Text("Deleting removes the item and its photos from this device.")
+                }
             }
         }
         .navigationTitle(item.name)
@@ -52,11 +68,19 @@ struct WardrobeItemDetailView: View {
             isPresented: $showingDeleteConfirmation,
             titleVisibility: .visible
         ) {
-            Button("Delete", role: .destructive) {
-                deleteItem()
+            if usageCount == 0 {
+                Button("Delete", role: .destructive) {
+                    deleteItem()
+                }
+            } else {
+                Button("OK", role: .cancel) {}
             }
         } message: {
-            Text("The item and its photos will be removed from this device.")
+            if usageCount > 0 {
+                Text("This item is used in \(usageCount) saved \(usageCount == 1 ? "look" : "looks"). Delete those looks before deleting this item.")
+            } else {
+                Text("The item and its photos will be removed from this device.")
+            }
         }
         .alert(
             "Couldn't Delete Item",

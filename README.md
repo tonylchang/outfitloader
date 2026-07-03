@@ -26,11 +26,11 @@ See `docs/MVP_ARCHITECTURE.md` for the implementation plan and current slice sta
 
 ## Building
 
-Open `Outfitloader.xcodeproj` in Xcode 26 or later and run the `Outfitloader` scheme. Camera capture requires a physical device; photo import works in the simulator. The project uses a file-system-synchronized folder, so new files under `Outfitloader/` join the target automatically.
+Open `outfitloader.xcodeproj` in Xcode 26 or later and run the `outfitloader` scheme. Camera capture requires a physical device; photo import works in the simulator. The project uses a file-system-synchronized folder, so new files under `outfitloader/` join the target automatically.
 
 ## Testing
 
-Run the `Outfitloader` scheme tests in Xcode, or from the command line with `xcodebuild test`. The initial suite includes Swift Testing coverage for avatar body-shape rendering, XCTest coverage for saved-look persistence and delete blocking, and an XCUITest launch smoke test.
+Run the `outfitloader` scheme tests in Xcode, or from the command line with `xcodebuild test`. The initial suite includes Swift Testing coverage for avatar body-shape rendering, XCTest coverage for saved-look persistence and delete blocking, and an XCUITest launch smoke test.
 
 ## Spec-Driven Development
 

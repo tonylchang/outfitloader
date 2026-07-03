@@ -3,86 +3,253 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
   <title>outfitloader privacy policy</title>
   <style>
     :root {
       color-scheme: light dark;
-      --bg: Canvas;
-      --text: CanvasText;
-      --muted: color-mix(in srgb, CanvasText 68%, Canvas 32%);
-      --border: color-mix(in srgb, CanvasText 18%, Canvas 82%);
-      --accent: #0a84ff;
+      --violet: #5b57c9;
+      --amethyst: #8a5bcf;
+      --orchid: #b06bc8;
+      --gradient: linear-gradient(135deg, var(--violet) 0%, var(--amethyst) 55%, var(--orchid) 100%);
+      --paper: #fcfbfe;
+      --ink: #201d28;
+      --muted: #6e6880;
+      --link: #4f4abf;
+      --card: rgba(255, 255, 255, 0.82);
+      --card-border: rgba(91, 87, 201, 0.18);
+      --hairline: rgba(32, 29, 40, 0.12);
     }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --paper: #16131c;
+        --ink: #edeaf4;
+        --muted: #a49dbb;
+        --link: #bdb4f5;
+        --card: rgba(30, 26, 38, 0.82);
+        --card-border: rgba(176, 107, 200, 0.24);
+        --hairline: rgba(237, 234, 244, 0.14);
+      }
+    }
+
+    * { box-sizing: border-box; }
 
     body {
       margin: 0;
-      background: var(--bg);
-      color: var(--text);
-      font: 16px/1.55 -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", sans-serif;
+      background: var(--paper);
+      color: var(--ink);
+      font: 17px/1.6 -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", sans-serif;
     }
+
+    a { color: var(--link); }
+
+    :focus-visible {
+      outline: 3px solid var(--amethyst);
+      outline-offset: 2px;
+      border-radius: 4px;
+    }
+
+    /* ---------- hero ---------- */
+
+    .hero {
+      position: relative;
+      overflow: hidden;
+      background: var(--gradient);
+      color: #fff;
+      padding: clamp(56px, 10vw, 104px) 20px clamp(88px, 12vw, 132px);
+    }
+
+    /* the O — the icon's ring, zoomed in and cropped by the edge */
+    .hero::before {
+      content: "";
+      position: absolute;
+      top: 50%;
+      right: clamp(-160px, -12vw, -60px);
+      width: clamp(230px, 34vw, 420px);
+      aspect-ratio: 1;
+      transform: translateY(-50%);
+      border-radius: 50%;
+      border: clamp(46px, 6.8vw, 84px) solid #fbfaff;
+      opacity: 0.96;
+    }
+
+    @media (prefers-reduced-motion: no-preference) {
+      .hero::before {
+        animation: ring-in 0.9s cubic-bezier(0.22, 1, 0.36, 1) both;
+      }
+      @keyframes ring-in {
+        from { transform: translateY(-50%) scale(0.92); opacity: 0; }
+        to   { transform: translateY(-50%) scale(1); opacity: 0.96; }
+      }
+    }
+
+    /* narrow screens: the ring becomes a quarter-arc in the corner, clear of the text */
+    @media (max-width: 600px) {
+      .hero::before {
+        top: -110px;
+        right: -110px;
+        width: 220px;
+        border-width: 40px;
+        transform: none;
+      }
+      @media (prefers-reduced-motion: no-preference) {
+        @keyframes ring-in {
+          from { transform: scale(0.92); opacity: 0; }
+          to   { transform: scale(1); opacity: 0.96; }
+        }
+      }
+    }
+
+    .hero-inner {
+      position: relative;
+      max-width: 760px;
+      margin: 0 auto;
+    }
+
+    .eyebrow {
+      margin: 0;
+      font: 600 0.85rem/1 ui-monospace, "SF Mono", Menlo, monospace;
+      letter-spacing: 0.18em;
+      color: rgba(255, 255, 255, 0.92);
+    }
+
+    h1 {
+      margin: 14px 0 0;
+      max-width: 11ch;
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", sans-serif;
+      font-size: clamp(2.6rem, 8vw, 4.4rem);
+      font-weight: 800;
+      line-height: 1.02;
+      letter-spacing: -0.025em;
+    }
+
+    .lede {
+      margin: 22px 0 0;
+      max-width: 34ch;
+      font-size: clamp(1.15rem, 2.6vw, 1.4rem);
+      line-height: 1.4;
+      font-weight: 500;
+    }
+
+    .hero .meta {
+      margin: 26px 0 0;
+      font: 500 0.85rem/1 ui-monospace, "SF Mono", Menlo, monospace;
+      letter-spacing: 0.06em;
+      color: rgba(255, 255, 255, 0.92);
+    }
+
+    /* ---------- content ---------- */
 
     main {
       max-width: 760px;
       margin: 0 auto;
-      padding: 48px 20px 72px;
-    }
-
-    h1, h2 {
-      line-height: 1.2;
-      margin: 0;
-    }
-
-    h1 {
-      font-size: clamp(2rem, 6vw, 3rem);
-      letter-spacing: 0;
-    }
-
-    h2 {
-      margin-top: 34px;
-      font-size: 1.25rem;
-    }
-
-    p, ul {
-      margin: 12px 0 0;
-    }
-
-    ul {
-      padding-left: 1.4rem;
-    }
-
-    li + li {
-      margin-top: 8px;
-    }
-
-    .meta {
-      color: var(--muted);
-      margin-top: 10px;
+      padding: 0 20px 72px;
     }
 
     .summary {
-      margin-top: 28px;
-      padding: 18px;
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      background: color-mix(in srgb, var(--accent) 7%, Canvas 93%);
+      position: relative;
+      margin-top: -56px;
+      padding: 24px 26px 26px;
+      border-radius: 18px;
+      border: 1px solid var(--card-border);
+      background: var(--card);
+      -webkit-backdrop-filter: blur(18px);
+      backdrop-filter: blur(18px);
+      box-shadow: 0 18px 44px -22px rgba(63, 46, 130, 0.45);
     }
 
-    a {
-      color: var(--accent);
+    .summary h2 { margin-top: 0; }
+    .summary h2::before { display: none; }
+    .summary p { margin-bottom: 0; }
+
+    h2 {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin: 52px 0 0;
+      font-size: 1.3rem;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      line-height: 1.25;
+    }
+
+    /* ring marker — the O carried through */
+    h2::before {
+      content: "";
+      flex: none;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      border: 3.5px solid var(--amethyst);
+    }
+
+    p, ul { margin: 14px 0 0; }
+
+    ul {
+      padding-left: 1.5rem;
+      list-style: circle; /* hollow — the small o */
+    }
+
+    li { padding-left: 0.2rem; }
+    li + li { margin-top: 8px; }
+    li::marker { color: var(--amethyst); }
+
+    /* ---------- footer ---------- */
+
+    footer {
+      border-top: 1px solid var(--hairline);
+      padding: 28px 20px 56px;
+    }
+
+    .footer-inner {
+      max-width: 760px;
+      margin: 0 auto;
+      display: flex;
+      align-items: baseline;
+      gap: 12px;
+      color: var(--muted);
+      font-size: 0.9rem;
+      line-height: 1.5;
+    }
+
+    .footer-ring {
+      flex: none;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      border: 3px solid transparent;
+      background:
+        linear-gradient(var(--paper), var(--paper)) padding-box,
+        var(--gradient) border-box;
+      transform: translateY(1px);
+    }
+
+    @media print {
+      .hero { background: none; color: #000; padding-bottom: 24px; }
+      .hero::before { display: none; }
+      .eyebrow, .hero .meta { color: #444; }
+      .summary { margin-top: 0; box-shadow: none; }
     }
   </style>
 </head>
 <body>
-  <main>
-    <h1>outfitloader privacy policy</h1>
-    <p class="meta">Effective date: July 3, 2026</p>
+  <header class="hero">
+    <div class="hero-inner">
+      <p class="eyebrow">outfitloader</p>
+      <h1>Privacy policy</h1>
+      <p class="lede">Your photos, your avatar, and your closet stay on your device.</p>
+      <p class="meta">Effective July 3, 2026</p>
+    </div>
+  </header>
 
+  <main>
     <section class="summary" aria-labelledby="summary-heading">
-      <h2 id="summary-heading">Short Version</h2>
+      <h2 id="summary-heading">Short version</h2>
       <p>outfitloader is designed as an on-device wardrobe and outfit planning app. The app does not use a backend, does not include product analytics, does not track you, and does not send your photos, avatar, wardrobe, body-shape adjustments, or saved looks to third-party AI services.</p>
     </section>
 
-    <h2>Information You Add To The App</h2>
+    <h2>Information you add to the app</h2>
     <p>outfitloader lets you create and store the following information on your device:</p>
     <ul>
       <li>Avatar photos and generated avatar silhouettes.</li>
@@ -92,29 +259,29 @@
       <li>Saved outfit looks, item placements, and generated outfit preview images.</li>
     </ul>
 
-    <h2>How The App Uses This Information</h2>
+    <h2>How the app uses this information</h2>
     <p>The app uses this information to provide its core features: creating your avatar, building your local closet, previewing outfits, saving looks, reopening looks, and deleting your local data.</p>
     <p>Avatar and clothing image processing uses Apple on-device frameworks where available. Body-shape controls are visual fit controls only; they are not used to identify you, authenticate you, infer sensitive traits, or make health, fitness, body-composition, or sizing claims.</p>
 
-    <h2>On-Device Storage</h2>
+    <h2>On-device storage</h2>
     <p>outfitloader stores app data locally on your device using SwiftData and local image files in the app container. The app does not operate a server or hosted database for the MVP.</p>
     <p>Your photos and data never leave your device except as part of your own device backups (iCloud Backup or encrypted local backups), if you have backups enabled. These backups are encrypted and managed by you through iOS, not by outfitloader, and they let you restore your closet when you move to a new device. outfitloader does not provide cloud sync in the MVP.</p>
 
-    <h2>No Tracking Or Analytics</h2>
+    <h2>No tracking or analytics</h2>
     <p>outfitloader does not include product analytics, behavioral tracking, advertising SDKs, data brokers, or third-party tracking tools.</p>
     <p>The app does not use your data for advertising, marketing, profiling, or data mining.</p>
 
-    <h2>Camera And Photo Access</h2>
+    <h2>Camera and photo access</h2>
     <p>The app requests camera access when you choose to capture an avatar or wardrobe photo. The app uses system photo import flows when you choose to import an image from your photo library. outfitloader uses the selected images only for the feature you requested.</p>
 
-    <h2>Sharing With Third Parties</h2>
+    <h2>Sharing with third parties</h2>
     <p>outfitloader does not share your photos, generated avatar data, wardrobe data, body-shape adjustments, or saved looks with third parties.</p>
     <p>If future versions add sync, accounts, sharing, external AI services, analytics, or other network features, this policy and the app specification must be updated before those features are released.</p>
 
-    <h2>Crash Reports And Diagnostics</h2>
+    <h2>Crash reports and diagnostics</h2>
     <p>During TestFlight or App Store distribution, Apple may provide developers with crash reports and technical diagnostics through Apple platform tools. outfitloader does not intentionally log sensitive photos, generated avatars, wardrobe images, body-shape adjustments, body measurements, or personally identifying closet data.</p>
 
-    <h2>Deleting Your Data</h2>
+    <h2>Deleting your data</h2>
     <p>You can delete local app data from within the app:</p>
     <ul>
       <li>Open the Avatar tab.</li>
@@ -126,11 +293,18 @@
     <h2>Children</h2>
     <p>outfitloader is not intended for the App Store Kids Category in v1. If the app later targets children or collects data from minors, the privacy design and this policy must be reviewed and updated first.</p>
 
-    <h2>Changes To This Policy</h2>
+    <h2>Changes to this policy</h2>
     <p>This policy should be updated when outfitloader's data practices change. App Store privacy answers should also be kept accurate and up to date.</p>
 
     <h2>Contact</h2>
     <p>While outfitloader is in TestFlight beta, use the TestFlight feedback channel or the invitation contact path you received from the developer for privacy questions or deletion concerns.</p>
   </main>
+
+  <footer>
+    <div class="footer-inner">
+      <span class="footer-ring" aria-hidden="true"></span>
+      <p>Like the app, this page keeps to itself: it loads no fonts, scripts, images, or analytics from anywhere. View source to check.</p>
+    </div>
+  </footer>
 </body>
 </html>

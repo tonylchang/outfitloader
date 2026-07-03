@@ -18,7 +18,6 @@ final class AvatarProfile {
     var isActive: Bool
     @Relationship(deleteRule: .cascade) var sourceImage: ImageAsset?
     @Relationship(deleteRule: .cascade) var silhouetteImage: ImageAsset?
-    @Relationship(deleteRule: .cascade) var previewImage: ImageAsset?
     var processingStatusRawValue: String
     var heightCentimeters: Double?
     var shoulderAdjustment: Double
@@ -26,8 +25,6 @@ final class AvatarProfile {
     var waistAdjustment: Double
     var hipAdjustment: Double
     var legAdjustment: Double
-    var poseConfidence: Double?
-    var bodyLandmarksJSON: Data?
 
     var processingStatus: AvatarProcessingStatus? {
         AvatarProcessingStatus(rawValue: processingStatusRawValue)
@@ -45,9 +42,7 @@ final class AvatarProfile {
         torsoAdjustment: Double = 0,
         waistAdjustment: Double = 0,
         hipAdjustment: Double = 0,
-        legAdjustment: Double = 0,
-        poseConfidence: Double? = nil,
-        bodyLandmarksJSON: Data? = nil
+        legAdjustment: Double = 0
     ) {
         self.id = id
         self.createdAt = createdAt
@@ -61,7 +56,5 @@ final class AvatarProfile {
         self.waistAdjustment = waistAdjustment
         self.hipAdjustment = hipAdjustment
         self.legAdjustment = legAdjustment
-        self.poseConfidence = poseConfidence
-        self.bodyLandmarksJSON = bodyLandmarksJSON
     }
 }

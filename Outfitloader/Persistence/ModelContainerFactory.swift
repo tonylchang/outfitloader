@@ -14,4 +14,9 @@ enum ModelContainerFactory {
         let configuration = ModelConfiguration(schema: schema)
         return try ModelContainer(for: schema, configurations: [configuration])
     }
+
+    static func makeInMemory() throws -> ModelContainer {
+        let configuration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)
+        return try ModelContainer(for: schema, configurations: [configuration])
+    }
 }

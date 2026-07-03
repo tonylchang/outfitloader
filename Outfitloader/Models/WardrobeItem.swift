@@ -12,7 +12,6 @@ final class WardrobeItem {
     @Relationship(deleteRule: .cascade) var originalImage: ImageAsset?
     @Relationship(deleteRule: .cascade) var processedImage: ImageAsset?
     @Relationship(deleteRule: .cascade) var thumbnailImage: ImageAsset?
-    @Relationship(deleteRule: .cascade) var maskImage: ImageAsset?
     var dominantColorName: String?
     var notes: String?
     var sortIndex: Int

@@ -210,6 +210,10 @@ struct LookRepository {
         else {
             throw LookRepositoryError.missingAvatar
         }
+        let renderedAvatar = AvatarBodyShapeRenderer().render(
+            avatarImage,
+            adjustment: look.avatarProfile?.bodyShapeAdjustment ?? .neutral
+        )
 
         let renderLayers = try await look.slots
             .sorted { $0.zIndex < $1.zIndex }
@@ -237,7 +241,7 @@ struct LookRepository {
             }
 
         let preview = TryOnComposer().compose(
-            avatar: avatarImage,
+            avatar: renderedAvatar,
             avatarAdjustment: AvatarAdjustment(
                 scale: CGFloat(look.avatarScale),
                 rotationRadians: CGFloat(look.avatarRotationDegrees) * .pi / 180,

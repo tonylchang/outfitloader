@@ -158,6 +158,16 @@ struct MediaStore {
         deleteMediaDirectory("Outfits/\(lookID.uuidString)")
     }
 
+    func deleteAllMedia() {
+        if let root = try? mediaRoot() {
+            try? FileManager.default.removeItem(at: root)
+        }
+
+        if let root = try? cachesRoot() {
+            try? FileManager.default.removeItem(at: root)
+        }
+    }
+
     // MARK: - Encoding
 
     private func writeJPEG(

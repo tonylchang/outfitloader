@@ -1,15 +1,15 @@
-# Outfitloader
+# outfitloader
 
 A native iOS/iPadOS app that turns a full-body selfie into a digital avatar and lets you photograph your real clothing to build a virtual closet, then mix and match outfits on your own body shape in seconds instead of trying everything on.
 
 ## Status
 
-Pre-release. Milestone 1, a TestFlight-able MVP, is in progress:
+Pre-release. Milestone 1, a TestFlight-able MVP, is implementation-complete and being prepared for TestFlight:
 
-- **Done:** app shell, on-device avatar creation (Vision person segmentation), digital closet with native background removal and replace-photo for clothing items, a try-on studio with tap-to-place and drag positioning, and saved looks with lookbook reopen.
-- **Next:** settings with local data deletion, avatar body-shape adjustments, and a physical-device readiness pass.
+- **Done:** app shell, on-device avatar creation (Vision person segmentation), avatar body-shape controls, digital closet with native background removal and replace-photo for clothing items, a try-on studio with tap-to-place and drag positioning, saved looks with lookbook reopen, settings with local data deletion, privacy policy draft, and an initial physical-device run.
+- **Next:** App Store Connect privacy answers, version/build number confirmation, archive, and manual TestFlight upload.
 
-See `docs/MVP_ARCHITECTURE.md` for the implementation plan and current slice status, and `docs/TECHNICAL_SPIKE_CAPTURE_COMPOSITING.md` for the spike that validated the pipeline.
+See `docs/MVP_ARCHITECTURE.md` for the implementation plan and current slice status, `docs/TECHNICAL_SPIKE_CAPTURE_COMPOSITING.md` for the spike that validated the pipeline, `docs/TESTFLIGHT_READINESS_CHECKLIST.md` for the final device validation pass, and `docs/privacy.html` for the current privacy policy draft.
 
 ## How It Works
 

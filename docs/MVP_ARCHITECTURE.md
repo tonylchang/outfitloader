@@ -2,12 +2,12 @@
 
 This document translates the active spec into an implementation plan for the TestFlight-able MVP. It intentionally excludes Phase 1 work such as outfit scheduling, reminders, automated clothing segmentation, analytics, backend services, and sync.
 
-> **Status (2026-07-03):** Implementation slices 1-7 are built and compile clean
-> for the iOS simulator target: app shell, SwiftData models, MediaStore, closet
+> **Status (2026-07-03):** Implementation slices 1-8 are built and compile clean
+> for the iOS simulator and generic device targets: app shell, SwiftData models, MediaStore, closet
 > CRUD with clothing foreground extraction, avatar onboarding with silhouette
-> generation, the try-on studio, saved-look persistence, and lookbook
-> detail/reopen. Remaining Milestone 1 work is privacy/settings with local data
-> deletion, avatar body-shape controls, and device/TestFlight readiness.
+> generation, the try-on studio, saved-look persistence, lookbook
+> detail/reopen, settings with local data deletion, and avatar body-shape
+> controls. An initial physical-device run has been completed. Remaining Milestone 1 work is TestFlight packaging: App Store Connect privacy answers, build numbering, archive, and manual upload.
 > Sections below note where the implementation
 > consolidated the original plan.
 
@@ -43,6 +43,7 @@ Outfitloader/
       AvatarRepository.swift
       WardrobeRepository.swift
       LookRepository.swift
+      LocalDataRepository.swift
   Media/
     MediaStore.swift
   Imaging/
@@ -50,6 +51,7 @@ Outfitloader/
       CameraCaptureView.swift
       GuidedCameraSheet.swift
     PersonSilhouetteGenerator.swift
+    AvatarBodyShapeRenderer.swift
     ClothingForegroundExtractor.swift
     TryOnComposer.swift
     ImageUtilities.swift
@@ -59,6 +61,7 @@ Outfitloader/
     Closet/
     TryOnStudio/
     Lookbook/
+    Settings/
   SharedUI/
     Components/
 ```
@@ -67,7 +70,8 @@ Consolidations relative to the original plan:
 
 - `ImageAssetWriter` and `ThumbnailGenerator` folded into `MediaStore`; split them out if the file grows past one clear responsibility.
 - `VisionProcessingService`, `AvatarBuilder`, and `ClothingPreprocessor` are deferred: `PersonSilhouetteGenerator` and `ClothingForegroundExtractor` are the Vision boundaries the MVP needs. Introduce the fuller service split when body-adjustment rendering or Phase 1 mask refinement demands it. The contract stands: UI views never call Vision/Core Image APIs directly.
-- `Features/Settings/` arrives with slice 8; `SharedUI/DesignTokens/` when a real design pass needs it.
+- `LocalDataRepository` deletes user-owned records and media while preserving seeded system categories.
+- `SharedUI/DesignTokens/` can arrive when a real design pass needs it.
 
 Tests should mirror these boundaries: model tests, media-store tests, pure compositor tests, and focused UI tests for the MVP flows.
 
@@ -466,21 +470,21 @@ Non-responsibilities:
 1. [x] App shell, SwiftData container, seeded default categories, and placeholder main navigation.
 2. [x] MediaStore with import/write/read/delete and thumbnail generation.
 3. [x] Closet CRUD using manual category selection, local images, native foreground extraction, and replace-photo for existing items.
-4. [x] Avatar onboarding with guided capture/import and basic generated silhouette/preview. Body-shape adjustment controls still to come (fields exist on `AvatarProfile`, no UI yet).
+4. [x] Avatar onboarding with guided capture/import, basic generated silhouette/preview, and body-shape adjustment controls.
 5. [x] Try-on studio with tap-to-select or drag/drop item assembly and deterministic layering.
 6. [x] Save look flow that creates `OutfitLook`, `OutfitSlot`, and preview image.
 7. [x] Lookbook gallery and look detail/reopen flow.
-8. [ ] Privacy/settings affordances, including local data deletion.
+8. [x] Privacy/settings affordances, including local data deletion.
 9. [ ] Device testing and TestFlight readiness pass.
 
 Milestone loose ends before slice 9:
 
-- [ ] Avatar body-shape adjustment controls.
+- [ ] Run the physical-device/TestFlight readiness checklist.
 
 ## Open Technical Questions
 
 - Can native Vision produce a good enough person mask from typical full-body selfies? **Answered in the spike:** good enough to proceed; silhouette edges are rough and may need Phase 1 refinement. Body-landmark quality remains unvalidated.
-- What minimum manual adjustment controls are needed for users to feel the avatar represents their proportions? **Open.** `AvatarProfile` stores adjustment fields, but no adjustment UI exists yet.
+- What minimum manual adjustment controls are needed for users to feel the avatar represents their proportions? **Answered for MVP:** avatar height plus shoulders, torso, waist, hips, and legs sliders, rendered as visual-only proportion adjustments.
 - Is tap-to-select enough for first TestFlight, or does drag/drop materially improve the try-on experience? **Both implemented** (tap-to-place from the shelf, drag-to-position on the canvas); validate the feel on device.
 - Should the MVP preserve deleted wardrobe items in existing looks as snapshots, or block deletion while an item is used by a saved look? **Answered:** block deletion while the item is used by saved looks, with an explanation showing how many looks reference it.
 - Should durable original media be excluded from standard iCloud device backup for stricter local-only privacy, or included for user restore safety? **Open:** decide before external TestFlight.

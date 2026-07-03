@@ -23,12 +23,23 @@ struct TryOnStudioView: View {
     @State private var shelfFilter: CategoryFilter = .all
     @State private var showingSaveSheet = false
 
+    private var activeAvatar: AvatarProfile? {
+        activeAvatars.first
+    }
+
     private var avatarDisplayAsset: ImageAsset? {
-        guard let avatar = activeAvatars.first else {
+        guard let avatar = activeAvatar else {
             return nil
         }
 
         return avatar.silhouetteImage ?? avatar.sourceImage
+    }
+
+    private var avatarRenderKey: String {
+        [
+            avatarDisplayAsset?.relativePath ?? "none",
+            activeAvatar?.bodyShapeAdjustment.cacheKey ?? AvatarBodyShapeAdjustment.neutral.cacheKey
+        ].joined(separator: "|")
     }
 
     private var shelfItems: [WardrobeItem] {
@@ -56,7 +67,7 @@ struct TryOnStudioView: View {
                     Button("Save", systemImage: "square.and.arrow.down") {
                         showingSaveSheet = true
                     }
-                    .disabled(!composition.canSave || avatarImage == nil || activeAvatars.first == nil)
+                    .disabled(!composition.canSave || avatarImage == nil || activeAvatar == nil)
 
                     Button("Reset", systemImage: "arrow.counterclockwise") {
                         composition.reset()
@@ -64,7 +75,7 @@ struct TryOnStudioView: View {
                     .disabled(composition.isPristine)
                 }
             }
-            .task(id: avatarDisplayAsset?.relativePath) {
+            .task(id: avatarRenderKey) {
                 await loadAvatarImage()
             }
             .sheet(isPresented: $showingSaveSheet) {
@@ -121,7 +132,7 @@ struct TryOnStudioView: View {
 
     @MainActor
     private func loadAvatarImage() async {
-        guard let asset = avatarDisplayAsset else {
+        guard let avatar = activeAvatar, let asset = avatarDisplayAsset else {
             avatarImage = nil
             return
         }
@@ -129,8 +140,14 @@ struct TryOnStudioView: View {
         let store = mediaStore
         let relativePath = asset.relativePath
         let kindRawValue = asset.kindRawValue
+        let adjustment = avatar.bodyShapeAdjustment
+
         avatarImage = await Task.detached(priority: .userInitiated) {
-            store.loadImage(relativePath: relativePath, kindRawValue: kindRawValue)
+            guard let source = store.loadImage(relativePath: relativePath, kindRawValue: kindRawValue) else {
+                return nil
+            }
+
+            return AvatarBodyShapeRenderer().render(source, adjustment: adjustment)
         }.value
     }
 
@@ -164,7 +181,7 @@ struct TryOnStudioView: View {
     }
 
     private func saveLook(named name: String) throws {
-        guard let avatar = activeAvatars.first, let avatarImage else {
+        guard let avatar = activeAvatar, let avatarImage else {
             throw LookRepositoryError.missingAvatar
         }
 

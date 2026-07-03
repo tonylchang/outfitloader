@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>outfitloader privacy policy</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --bg: Canvas;
+      --text: CanvasText;
+      --muted: color-mix(in srgb, CanvasText 68%, Canvas 32%);
+      --border: color-mix(in srgb, CanvasText 18%, Canvas 82%);
+      --accent: #0a84ff;
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font: 16px/1.55 -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", sans-serif;
+    }
+
+    main {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 48px 20px 72px;
+    }
+
+    h1, h2 {
+      line-height: 1.2;
+      margin: 0;
+    }
+
+    h1 {
+      font-size: clamp(2rem, 6vw, 3rem);
+      letter-spacing: 0;
+    }
+
+    h2 {
+      margin-top: 34px;
+      font-size: 1.25rem;
+    }
+
+    p, ul {
+      margin: 12px 0 0;
+    }
+
+    ul {
+      padding-left: 1.4rem;
+    }
+
+    li + li {
+      margin-top: 8px;
+    }
+
+    .meta {
+      color: var(--muted);
+      margin-top: 10px;
+    }
+
+    .summary {
+      margin-top: 28px;
+      padding: 18px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: color-mix(in srgb, var(--accent) 7%, Canvas 93%);
+    }
+
+    a {
+      color: var(--accent);
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>outfitloader privacy policy</h1>
+    <p class="meta">Effective date: July 3, 2026</p>
+
+    <section class="summary" aria-labelledby="summary-heading">
+      <h2 id="summary-heading">Short Version</h2>
+      <p>outfitloader is designed as an on-device wardrobe and outfit planning app. The app does not use a backend, does not include product analytics, does not track you, and does not send your photos, avatar, wardrobe, body-shape adjustments, or saved looks to third-party AI services.</p>
+    </section>
+
+    <h2>Information You Add To The App</h2>
+    <p>outfitloader lets you create and store the following information on your device:</p>
+    <ul>
+      <li>Avatar photos and generated avatar silhouettes.</li>
+      <li>Wardrobe photos, generated clothing cutouts, thumbnails, and related image metadata.</li>
+      <li>Manual wardrobe item names and categories.</li>
+      <li>Avatar body-shape adjustment values used only for visual outfit previews.</li>
+      <li>Saved outfit looks, item placements, and generated outfit preview images.</li>
+    </ul>
+
+    <h2>How The App Uses This Information</h2>
+    <p>The app uses this information to provide its core features: creating your avatar, building your local closet, previewing outfits, saving looks, reopening looks, and deleting your local data.</p>
+    <p>Avatar and clothing image processing uses Apple on-device frameworks where available. Body-shape controls are visual fit controls only; they are not used to identify you, authenticate you, infer sensitive traits, or make health, fitness, body-composition, or sizing claims.</p>
+
+    <h2>On-Device Storage</h2>
+    <p>outfitloader stores app data locally on your device using SwiftData and local image files in the app container. The app does not operate a server or hosted database for the MVP.</p>
+    <p>Your data may be included in standard encrypted device backups depending on your device and backup settings. outfitloader does not provide cloud sync in the MVP.</p>
+
+    <h2>No Tracking Or Analytics</h2>
+    <p>outfitloader does not include product analytics, behavioral tracking, advertising SDKs, data brokers, or third-party tracking tools.</p>
+    <p>The app does not use your data for advertising, marketing, profiling, or data mining.</p>
+
+    <h2>Camera And Photo Access</h2>
+    <p>The app requests camera access when you choose to capture an avatar or wardrobe photo. The app uses system photo import flows when you choose to import an image from your photo library. outfitloader uses the selected images only for the feature you requested.</p>
+
+    <h2>Sharing With Third Parties</h2>
+    <p>outfitloader does not share your photos, generated avatar data, wardrobe data, body-shape adjustments, or saved looks with third parties.</p>
+    <p>If future versions add sync, accounts, sharing, external AI services, analytics, or other network features, this policy and the app specification must be updated before those features are released.</p>
+
+    <h2>Crash Reports And Diagnostics</h2>
+    <p>During TestFlight or App Store distribution, Apple may provide developers with crash reports and technical diagnostics through Apple platform tools. outfitloader does not intentionally log sensitive photos, generated avatars, wardrobe images, body-shape adjustments, body measurements, or personally identifying closet data.</p>
+
+    <h2>Deleting Your Data</h2>
+    <p>You can delete local app data from within the app:</p>
+    <ul>
+      <li>Open the Avatar tab.</li>
+      <li>Open Settings.</li>
+      <li>Choose Delete All Local Data.</li>
+    </ul>
+    <p>This removes local avatar data, wardrobe items, saved looks, generated previews, and related local media from this device.</p>
+
+    <h2>Children</h2>
+    <p>outfitloader is not intended for the App Store Kids Category in v1. If the app later targets children or collects data from minors, the privacy design and this policy must be reviewed and updated first.</p>
+
+    <h2>Changes To This Policy</h2>
+    <p>This policy should be updated when outfitloader's data practices change. App Store privacy answers should also be kept accurate and up to date.</p>
+
+    <h2>Contact</h2>
+    <p>While outfitloader is in TestFlight beta, use the TestFlight feedback channel or the invitation contact path you received from the developer for privacy questions or deletion concerns.</p>
+  </main>
+</body>
+</html>

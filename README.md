@@ -1,13 +1,13 @@
 # Outfitloader
 
-A native iOS/iPadOS app that turns a full-body selfie into a digital avatar and lets you photograph your real clothing to build a virtual closet — then mix and match outfits on your own body shape in seconds, instead of trying everything on.
+A native iOS/iPadOS app that turns a full-body selfie into a digital avatar and lets you photograph your real clothing to build a virtual closet, then mix and match outfits on your own body shape in seconds instead of trying everything on.
 
 ## Status
 
-Pre-release. Milestone 1 — a TestFlight-able MVP — is in progress:
+Pre-release. Milestone 1, a TestFlight-able MVP, is in progress:
 
-- **Done:** app shell, on-device avatar creation (Vision person segmentation), digital closet with native background removal for clothing photos, and a try-on studio with tap-to-place and drag positioning.
-- **Next:** saving looks to the lookbook, settings with local data deletion, avatar body-shape adjustments, and a physical-device readiness pass.
+- **Done:** app shell, on-device avatar creation (Vision person segmentation), digital closet with native background removal for clothing photos, a try-on studio with tap-to-place and drag positioning, and saved looks with lookbook reopen.
+- **Next:** settings with local data deletion, wardrobe item replace-photo, avatar body-shape adjustments, and a physical-device readiness pass.
 
 See `docs/MVP_ARCHITECTURE.md` for the implementation plan and current slice status, and `docs/TECHNICAL_SPIKE_CAPTURE_COMPOSITING.md` for the spike that validated the pipeline.
 
@@ -16,12 +16,13 @@ See `docs/MVP_ARCHITECTURE.md` for the implementation plan and current slice sta
 1. Capture or import a full-body selfie; a transparent silhouette is generated on device with Vision.
 2. Photograph or import clothing items; Vision foreground extraction produces transparent cutouts, falling back to the original photo when it can't separate the item.
 3. Assemble outfits on the try-on canvas with deterministic layering (bottoms, shoes, tops, accessories) and per-item scale, rotation, and opacity.
+4. Save complete looks to the lookbook and reopen them later in the try-on studio.
 
 ## Stack & Privacy
 
-- Swift, SwiftUI, SwiftData, Vision, Core Image, AVFoundation, PhotosUI — Apple frameworks only, no third-party dependencies, no backend.
+- Swift, SwiftUI, SwiftData, Vision, Core Image, AVFoundation, PhotosUI - Apple frameworks only, no third-party dependencies, no backend.
 - iOS 26 / iPadOS 26 minimum; iPhone and iPad.
-- All photos, silhouettes, and wardrobe data stay on device. No analytics or tracking.
+- All photos, silhouettes, wardrobe data, and saved looks stay on device. No analytics or tracking.
 
 ## Building
 
@@ -29,7 +30,7 @@ Open `Outfitloader.xcodeproj` in Xcode 26 or later and run the `Outfitloader` sc
 
 ## Spec-Driven Development
 
-The project specification lives in `spec/elements/` — one file per concern (purpose, features, stack, UI, infra, constraints, project plan, versioning, context) — and is the source of truth for scope and constraints. Agent guidance lives in `AGENTS.md`. The `/spec-init`, `/spec-save-original`, `/spec-update`, and `/spec-check` workflows are defined in `spec/workflows/`, and `spec/original/` preserves the initial spec baseline.
+The project specification lives in `spec/elements/`, with one file per concern: purpose, features, stack, UI, infra, constraints, project plan, versioning, and context. It is the source of truth for scope and constraints. Agent guidance lives in `AGENTS.md`. The `/spec-init`, `/spec-save-original`, `/spec-update`, and `/spec-check` workflows are defined in `spec/workflows/`, and `spec/original/` preserves the initial spec baseline.
 
 ## License
 

@@ -70,8 +70,30 @@ struct MediaStore {
         try writeJPEG(image, relativePath: "Wardrobe/\(itemID.uuidString)/original.jpg", kind: .wardrobeOriginal, source: source)
     }
 
+    func writeWardrobeReplacementOriginal(_ image: UIImage, itemID: UUID, source: ImageSource) throws -> ImageAssetDraft {
+        let assetID = UUID()
+        return try writeJPEG(
+            image,
+            relativePath: "Wardrobe/\(itemID.uuidString)/Originals/\(assetID.uuidString).jpg",
+            kind: .wardrobeOriginal,
+            source: source,
+            assetID: assetID
+        )
+    }
+
     func writeWardrobeProcessed(_ image: UIImage, itemID: UUID) throws -> ImageAssetDraft {
         try writePNG(image, relativePath: "Wardrobe/\(itemID.uuidString)/processed.png", kind: .wardrobeProcessed, source: .generated)
+    }
+
+    func writeWardrobeReplacementProcessed(_ image: UIImage, itemID: UUID) throws -> ImageAssetDraft {
+        let assetID = UUID()
+        return try writePNG(
+            image,
+            relativePath: "Wardrobe/\(itemID.uuidString)/Processed/\(assetID.uuidString).png",
+            kind: .wardrobeProcessed,
+            source: .generated,
+            assetID: assetID
+        )
     }
 
     func writeOutfitPreview(_ image: UIImage, lookID: UUID) throws -> ImageAssetDraft {

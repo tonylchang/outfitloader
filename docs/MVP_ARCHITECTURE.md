@@ -7,8 +7,8 @@ This document translates the active spec into an implementation plan for the Tes
 > CRUD with clothing foreground extraction, avatar onboarding with silhouette
 > generation, the try-on studio, saved-look persistence, and lookbook
 > detail/reopen. Remaining Milestone 1 work is privacy/settings with local data
-> deletion, wardrobe item replace-photo, avatar body-shape controls, and
-> device/TestFlight readiness. Sections below note where the implementation
+> deletion, avatar body-shape controls, and device/TestFlight readiness.
+> Sections below note where the implementation
 > consolidated the original plan.
 
 ## Architecture Principles
@@ -465,7 +465,7 @@ Non-responsibilities:
 
 1. [x] App shell, SwiftData container, seeded default categories, and placeholder main navigation.
 2. [x] MediaStore with import/write/read/delete and thumbnail generation.
-3. [x] Closet CRUD using manual category selection and local images. Replace-photo on existing items still to come.
+3. [x] Closet CRUD using manual category selection, local images, native foreground extraction, and replace-photo for existing items.
 4. [x] Avatar onboarding with guided capture/import and basic generated silhouette/preview. Body-shape adjustment controls still to come (fields exist on `AvatarProfile`, no UI yet).
 5. [x] Try-on studio with tap-to-select or drag/drop item assembly and deterministic layering.
 6. [x] Save look flow that creates `OutfitLook`, `OutfitSlot`, and preview image.
@@ -475,7 +475,6 @@ Non-responsibilities:
 
 Milestone loose ends before slice 9:
 
-- [ ] Replace-photo for existing wardrobe items.
 - [ ] Avatar body-shape adjustment controls.
 
 ## Open Technical Questions

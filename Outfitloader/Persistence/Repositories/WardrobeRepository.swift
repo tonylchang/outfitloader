@@ -82,6 +82,59 @@ struct WardrobeRepository {
         return lookIDs.count
     }
 
+    func replaceItemPhoto(
+        _ item: WardrobeItem,
+        originalImage: UIImage,
+        processedImage: UIImage?,
+        capturedFrom source: ImageSource
+    ) throws {
+        let oldAssets = [item.originalImage, item.processedImage, item.thumbnailImage, item.maskImage].compactMap { $0 }
+        var newDrafts: [ImageAssetDraft] = []
+
+        let originalDraft: ImageAssetDraft
+        var processedDraft: ImageAssetDraft?
+        let thumbnailDraft: ImageAssetDraft
+        do {
+            originalDraft = try mediaStore.writeWardrobeReplacementOriginal(originalImage, itemID: item.id, source: source)
+            newDrafts.append(originalDraft)
+
+            if let processedImage {
+                processedDraft = try mediaStore.writeWardrobeReplacementProcessed(processedImage, itemID: item.id)
+                if let processedDraft {
+                    newDrafts.append(processedDraft)
+                }
+            }
+
+            thumbnailDraft = try mediaStore.writeThumbnail(from: processedImage ?? originalImage)
+            newDrafts.append(thumbnailDraft)
+        } catch {
+            deleteDrafts(newDrafts)
+            throw error
+        }
+
+        item.originalImage = ImageAsset(draft: originalDraft)
+        item.processedImage = processedDraft.map { ImageAsset(draft: $0) }
+        item.thumbnailImage = ImageAsset(draft: thumbnailDraft)
+        item.maskImage = nil
+        item.updatedAt = .now
+
+        for asset in oldAssets {
+            modelContext.delete(asset)
+        }
+
+        do {
+            try modelContext.save()
+        } catch {
+            modelContext.rollback()
+            deleteDrafts(newDrafts)
+            throw error
+        }
+
+        for asset in oldAssets {
+            mediaStore.deleteMedia(for: asset)
+        }
+    }
+
     func deleteItem(_ item: WardrobeItem) throws {
         let usageCount = try savedLookUsageCount(for: item)
         guard usageCount == 0 else {
@@ -95,5 +148,11 @@ struct WardrobeRepository {
         mediaStore.deleteWardrobeMedia(itemID: item.id)
         modelContext.delete(item)
         try modelContext.save()
+    }
+
+    private func deleteDrafts(_ drafts: [ImageAssetDraft]) {
+        for draft in drafts {
+            mediaStore.deleteFile(relativePath: draft.relativePath, kind: draft.kind)
+        }
     }
 }

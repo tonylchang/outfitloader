@@ -172,6 +172,29 @@ struct LookRepository {
         try modelContext.save()
     }
 
+    func refreshPreviews(containing item: WardrobeItem) async {
+        guard let fetchedLooks = try? modelContext.fetch(FetchDescriptor<OutfitLook>()) else {
+            return
+        }
+
+        let looks = fetchedLooks.filter { look in
+            !look.isArchived && look.slots.contains { $0.wardrobeItem?.id == item.id }
+        }
+
+        guard !looks.isEmpty else {
+            return
+        }
+
+        for look in looks {
+            do {
+                try await refreshPreview(for: look)
+                try modelContext.save()
+            } catch {
+                modelContext.rollback()
+            }
+        }
+    }
+
     private func loadImage(for asset: ImageAsset) async -> UIImage? {
         let store = mediaStore
         let relativePath = asset.relativePath
@@ -179,6 +202,58 @@ struct LookRepository {
         return await Task.detached(priority: .userInitiated) {
             store.loadImage(relativePath: relativePath, kindRawValue: kindRawValue)
         }.value
+    }
+
+    private func refreshPreview(for look: OutfitLook) async throws {
+        guard let avatarAsset = look.avatarProfile?.silhouetteImage ?? look.avatarProfile?.sourceImage,
+              let avatarImage = await loadImage(for: avatarAsset)
+        else {
+            throw LookRepositoryError.missingAvatar
+        }
+
+        let renderLayers = try await look.slots
+            .sorted { $0.zIndex < $1.zIndex }
+            .asyncMap { slot in
+                guard let item = slot.wardrobeItem else {
+                    throw LookRepositoryError.missingWardrobeItem(slot.categoryKind?.displayName ?? "Clothing item")
+                }
+
+                guard let asset = item.displayImage,
+                      let image = await loadImage(for: asset)
+                else {
+                    throw LookRepositoryError.missingImage(item.name)
+                }
+
+                return OutfitRenderLayer(
+                    image: image,
+                    placement: ClothingPlacement(
+                        anchor: CGPoint(x: slot.anchorX, y: slot.anchorY),
+                        scale: CGFloat(slot.scale),
+                        rotationRadians: CGFloat(slot.rotationDegrees) * .pi / 180,
+                        opacity: CGFloat(slot.opacity)
+                    ),
+                    zIndex: slot.zIndex
+                )
+            }
+
+        let preview = TryOnComposer().compose(
+            avatar: avatarImage,
+            avatarAdjustment: AvatarAdjustment(
+                scale: CGFloat(look.avatarScale),
+                rotationRadians: CGFloat(look.avatarRotationDegrees) * .pi / 180,
+                opacity: CGFloat(look.avatarOpacity)
+            ),
+            layers: renderLayers
+        )
+        let previewDraft = try mediaStore.writeOutfitPreview(preview, lookID: look.id)
+
+        if let previewImage = look.previewImage {
+            previewImage.apply(previewDraft)
+        } else {
+            look.previewImage = ImageAsset(draft: previewDraft)
+        }
+
+        look.updatedAt = .now
     }
 }
 
@@ -191,5 +266,20 @@ private extension Sequence {
             values.append(value)
         }
         return values
+    }
+}
+
+private extension ImageAsset {
+    func apply(_ draft: ImageAssetDraft) {
+        updatedAt = .now
+        kindRawValue = draft.kind.rawValue
+        relativePath = draft.relativePath
+        contentType = draft.contentType
+        pixelWidth = draft.pixelWidth
+        pixelHeight = draft.pixelHeight
+        byteCount = draft.byteCount
+        sourceRawValue = draft.source.rawValue
+        sha256 = draft.sha256
+        isRegenerable = draft.isRegenerable
     }
 }

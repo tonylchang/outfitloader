@@ -16,6 +16,7 @@ Definition of done:
 - User can complete guided avatar/selfie capture.
 - User can create a basic avatar representation and adjust core body-shape details.
 - User can photograph or import clothing items.
+- User can use native on-device foreground extraction to create transparent clothing overlays when Vision can separate the item from its background.
 - User can categorize, view, edit, and delete closet items.
 - User can assemble an outfit on the avatar through drag-and-drop or tap-to-select interactions.
 - User can save outfits and view them in a lookbook.
@@ -26,7 +27,7 @@ Definition of done:
 
 Target window: months 3-6 after MVP.
 
-- Automated clothing segmentation: use a lightweight model or native vision pipeline to remove clothing-photo backgrounds when user feedback shows manual editing friction.
+- Clothing mask refinement: improve edge cleanup, failure recovery, and capture guidance if MVP native foreground extraction is useful but rough in real closet conditions.
 - Outfit scheduling and reminders: assign outfits to dates and show a morning push notification for the planned look.
 - Basic wardrobe analytics: show simple stats such as most-worn item, least-worn colors, or cost per wear if users add prices.
 

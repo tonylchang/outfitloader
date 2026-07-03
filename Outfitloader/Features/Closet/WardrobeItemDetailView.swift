@@ -16,6 +16,7 @@ struct WardrobeItemDetailView: View {
     private var looks: [OutfitLook]
 
     @State private var showingDeleteConfirmation = false
+    @State private var showingReplacePhotoSheet = false
     @State private var errorMessage: String?
 
     private var usageCount: Int {
@@ -47,6 +48,14 @@ struct WardrobeItemDetailView: View {
             }
 
             Section {
+                Button("Replace Photo", systemImage: "photo.badge.arrow.down") {
+                    showingReplacePhotoSheet = true
+                }
+            } footer: {
+                Text("Replacing updates the closet item photo stored on this device.")
+            }
+
+            Section {
                 Button("Delete Item", role: .destructive) {
                     showingDeleteConfirmation = true
                 }
@@ -62,6 +71,9 @@ struct WardrobeItemDetailView: View {
         .navigationBarTitleDisplayMode(.inline)
         .onChange(of: item.name) {
             item.updatedAt = .now
+        }
+        .sheet(isPresented: $showingReplacePhotoSheet) {
+            ReplaceWardrobePhotoSheet(item: item)
         }
         .confirmationDialog(
             "Delete \(item.name)?",

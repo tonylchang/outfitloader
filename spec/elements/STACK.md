@@ -13,7 +13,7 @@
 - SwiftData for local structured persistence, including wardrobe items, saved outfits, categories, and future scheduling metadata when Phase 1 scheduling is implemented.
 - PhotosUI / PhotosPicker for privacy-preserving camera-roll import.
 - AVFoundation for guided in-app camera capture when the system picker is not enough.
-- Vision for human body pose detection, person segmentation, and other native computer-vision tasks where feasible.
+- Vision for human body pose detection, person segmentation, clothing foreground extraction, and other native computer-vision tasks where feasible.
 - Core ML for on-device ML model inference if avatar or clothing processing needs model-based behavior.
 - Core Image for image cleanup, masking, compositing, filtering, and lightweight image processing.
 - UIKit only where required to bridge lower-level platform APIs that SwiftUI does not expose directly.
@@ -51,5 +51,5 @@
 - SwiftData is the preferred local persistence layer because the app needs structured, user-owned records for wardrobe items, outfits, categories, and schedules.
 - PhotosUI should be preferred for camera-roll import because it lets users intentionally select assets without granting broad photo-library access.
 - AVFoundation is appropriate for guided full-body selfie and clothing capture flows that need custom framing, overlays, lighting guidance, or camera control.
-- Vision, Core ML, and Core Image are the preferred first choices for avatar, segmentation, body-proportion, and image-compositing work because they keep sensitive body and wardrobe imagery on-device where feasible.
-- Avatar generation and clothing segmentation require an early technical spike. If native Apple frameworks cannot produce acceptable results, propose specific external dependencies or services and get approval before adopting them.
+- Vision, Core ML, and Core Image are the preferred first choices for avatar, clothing foreground extraction, body-proportion, and image-compositing work because they keep sensitive body and wardrobe imagery on-device where feasible.
+- The initial technical spike validated native Apple frameworks as good enough to continue for avatar person segmentation and lightweight clothing foreground extraction. If later quality requirements exceed native capabilities, propose specific external dependencies or services and get approval before adopting them.

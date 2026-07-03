@@ -12,6 +12,7 @@
 
 - Clothing photo capture from the camera.
 - Clothing photo upload from the user's camera roll.
+- Lightweight native foreground extraction for clothing photos using Apple Vision, so MVP clothing overlays are not rectangular source photos when Vision can separate the item from the background.
 - Visual grid for browsing uploaded wardrobe items.
 - Basic item management: add, edit, rename, replace photo, and delete.
 - Manual item categorization for tops, bottoms, shoes, and accessories.
@@ -19,16 +20,17 @@
 ### Virtual Try-On
 
 - Outfit assembly through a simple drag-and-drop or tap-to-select interaction.
-- Instant avatar preview updates as clothing items are added or removed.
+- Instant avatar preview updates as clothing items are added, adjusted, or removed.
+- Basic layer adjustment controls for avatar and clothing scale, rotation, and opacity.
 - Save selected item combinations as complete looks or outfits.
 
 ### Outfit Planning
 
 - Lookbook or outfit gallery for saved outfits.
-- Simple outfit scheduling that assigns saved outfits to calendar days, if feasible within the first release.
 
 ## Planned Features
 
+- Outfit scheduling, reminders, and calendar-style planning after the MVP.
 - AI stylist recommendations and style analysis.
 - Social sharing, following, or community features.
 - Retail integrations, shopping links, or affiliate links.

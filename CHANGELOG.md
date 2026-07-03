@@ -25,6 +25,7 @@ Milestone 1 TestFlight-able MVP work.
 
 ### Changed
 
+- Changed the bundle identifier to `net.1x0.outfitloader` ahead of the first App Store Connect record.
 - Removed unpopulated avatar pose/preview and wardrobe mask schema fields before the first tagged release.
 - Consolidated wardrobe add/replace photo acquisition and foreground extraction state into a shared view model.
 - Serialized local media file IO through a single `MediaStore` queue.
@@ -33,5 +34,6 @@ Milestone 1 TestFlight-able MVP work.
 
 - All user photos, avatar data, wardrobe data, body-shape adjustments, and saved looks stay on device for v1.
 - No backend, sync, product analytics, or third-party AI services are included.
-- An initial physical-device run has been completed.
-- App Store Connect privacy answers, build numbering, archive, and manual upload remain before external TestFlight.
+- User data participates in standard user-controlled encrypted device backups; the privacy policy states this explicitly.
+- The full physical-device TestFlight readiness checklist has been completed.
+- Archive and manual upload remain before external TestFlight.

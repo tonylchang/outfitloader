@@ -4,8 +4,8 @@
 
 - Milestone 1 (TestFlight-able MVP) implementation is complete and the technical spike is complete and retired.
 - Implemented so far: app shell, SwiftData persistence with seeded categories, local media storage, closet capture/import/replace-photo with native clothing foreground extraction, avatar onboarding with silhouette generation and body-shape controls, the try-on studio, save-look persistence, lookbook detail/reopen, and settings with local data deletion.
-- An initial physical-device run has been completed by the project owner.
-- Remaining before external TestFlight: App Store Connect privacy answers, version/build number confirmation, archive, and manual upload.
+- The full physical-device TestFlight readiness checklist has been completed by the project owner, and release prep (published privacy policy, App Store Connect privacy answers, version/build confirmation) is done.
+- Remaining before external TestFlight: archive and manual upload.
 - Development approach is milestone-based.
 - The first milestone should produce a TestFlight-able MVP.
 

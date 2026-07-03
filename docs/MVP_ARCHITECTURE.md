@@ -2,13 +2,14 @@
 
 This document translates the active spec into an implementation plan for the TestFlight-able MVP. It intentionally excludes Phase 1 work such as outfit scheduling, reminders, automated clothing segmentation, analytics, backend services, and sync.
 
-> **Status (2026-07-03):** Implementation slices 1-5 are built and compile clean
-> for the iOS device target: app shell, SwiftData models, MediaStore, closet
+> **Status (2026-07-03):** Implementation slices 1-7 are built and compile clean
+> for the iOS simulator target: app shell, SwiftData models, MediaStore, closet
 > CRUD with clothing foreground extraction, avatar onboarding with silhouette
-> generation, and the try-on studio. Slices 6-9 remain (save-look flow, lookbook
-> detail/reopen, privacy/settings affordances, device/TestFlight readiness
-> pass). Sections below note where the implementation consolidated the original
-> plan.
+> generation, the try-on studio, saved-look persistence, and lookbook
+> detail/reopen. Remaining Milestone 1 work is privacy/settings with local data
+> deletion, wardrobe item replace-photo, avatar body-shape controls, and
+> device/TestFlight readiness. Sections below note where the implementation
+> consolidated the original plan.
 
 ## Architecture Principles
 
@@ -41,6 +42,7 @@ Outfitloader/
     Repositories/
       AvatarRepository.swift
       WardrobeRepository.swift
+      LookRepository.swift
   Media/
     MediaStore.swift
   Imaging/
@@ -155,9 +157,9 @@ Suggested fields:
 
 Notes:
 
-- `processedImage` can initially be a normalized/cropped version of the original. It should not imply automated background removal in the MVP.
-- `maskImage` is optional and exists to avoid a data migration when Phase 1 segmentation arrives.
-- Deleting an item should remove it from new outfit assembly and either prevent deletion while used by saved looks or preserve a read-only snapshot reference for existing looks.
+- `processedImage` stores the transparent native foreground cutout when Vision succeeds, falling back to the original image for display/composition when extraction cannot separate the item.
+- `maskImage` is optional and remains available for later mask storage or Phase 1 refinement.
+- Deleting an item removes it from new outfit assembly, but MVP blocks deletion while the item is used by saved looks. Snapshot preservation is deferred.
 
 ### `OutfitLook`
 
@@ -172,6 +174,9 @@ Suggested fields:
 - `avatarProfile: AvatarProfile?`
 - `slots: [OutfitSlot]`
 - `previewImage: ImageAsset?`
+- `avatarScale: Double`
+- `avatarRotationDegrees: Double`
+- `avatarOpacity: Double`
 - `notes: String?`
 - `sortIndex: Int`
 - `isArchived: Bool`
@@ -180,6 +185,7 @@ Notes:
 
 - MVP lookbook is a gallery of saved looks, not a calendar.
 - A saved look should keep enough slot transform data to re-render even if default placement logic changes later.
+- Saved looks also persist avatar scale, rotation, and opacity so reopening a look restores both clothing and avatar adjustments.
 
 ### `OutfitSlot`
 
@@ -419,8 +425,9 @@ Responsibilities:
 
 MVP boundary:
 
-- Automated background removal is not required for v1.
-- Phase 1 can replace or enhance this service with segmentation without changing `WardrobeItem`, `ImageAsset`, or try-on UI contracts.
+- Lightweight native foreground extraction is in v1 and should produce a transparent processed image when Vision can separate the clothing item from the background.
+- If extraction fails, the app can fall back to the original image without blocking item creation.
+- Phase 1 can refine masks, edge cleanup, and capture guidance without changing `WardrobeItem`, `ImageAsset`, or try-on UI contracts.
 
 Spike update:
 
@@ -461,15 +468,20 @@ Non-responsibilities:
 3. [x] Closet CRUD using manual category selection and local images. Replace-photo on existing items still to come.
 4. [x] Avatar onboarding with guided capture/import and basic generated silhouette/preview. Body-shape adjustment controls still to come (fields exist on `AvatarProfile`, no UI yet).
 5. [x] Try-on studio with tap-to-select or drag/drop item assembly and deterministic layering.
-6. [ ] Save look flow that creates `OutfitLook`, `OutfitSlot`, and preview image.
-7. [ ] Lookbook gallery and look detail/reopen flow.
+6. [x] Save look flow that creates `OutfitLook`, `OutfitSlot`, and preview image.
+7. [x] Lookbook gallery and look detail/reopen flow.
 8. [ ] Privacy/settings affordances, including local data deletion.
 9. [ ] Device testing and TestFlight readiness pass.
+
+Milestone loose ends before slice 9:
+
+- [ ] Replace-photo for existing wardrobe items.
+- [ ] Avatar body-shape adjustment controls.
 
 ## Open Technical Questions
 
 - Can native Vision produce a good enough person mask from typical full-body selfies? **Answered in the spike:** good enough to proceed; silhouette edges are rough and may need Phase 1 refinement. Body-landmark quality remains unvalidated.
 - What minimum manual adjustment controls are needed for users to feel the avatar represents their proportions? **Open.** `AvatarProfile` stores adjustment fields, but no adjustment UI exists yet.
 - Is tap-to-select enough for first TestFlight, or does drag/drop materially improve the try-on experience? **Both implemented** (tap-to-place from the shelf, drag-to-position on the canvas); validate the feel on device.
-- Should the MVP preserve deleted wardrobe items in existing looks as snapshots, or block deletion while an item is used by a saved look? **Open — must be decided in slices 6-7.** Items currently delete freely because no saved looks exist yet.
-- Should durable original media be excluded from standard iCloud device backup for stricter local-only privacy, or included for user restore safety? **Open — decide before external TestFlight.**
+- Should the MVP preserve deleted wardrobe items in existing looks as snapshots, or block deletion while an item is used by a saved look? **Answered:** block deletion while the item is used by saved looks, with an explanation showing how many looks reference it.
+- Should durable original media be excluded from standard iCloud device backup for stricter local-only privacy, or included for user restore safety? **Open:** decide before external TestFlight.

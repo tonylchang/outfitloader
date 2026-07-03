@@ -3,8 +3,8 @@
 ## Current Phase
 
 - Milestone 1 (TestFlight-able MVP) implementation is underway; the technical spike is complete and retired.
-- Implemented so far: app shell, SwiftData persistence with seeded categories, local media storage, closet capture/import with native clothing foreground extraction, avatar onboarding with silhouette generation, and the try-on studio.
-- Remaining for Milestone 1: save-look flow, lookbook detail/reopen, privacy/settings affordances including local data deletion, avatar body-shape adjustment controls, and a physical-device/TestFlight readiness pass.
+- Implemented so far: app shell, SwiftData persistence with seeded categories, local media storage, closet capture/import with native clothing foreground extraction, avatar onboarding with silhouette generation, the try-on studio, save-look persistence, and lookbook detail/reopen.
+- Remaining for Milestone 1: privacy/settings affordances including local data deletion, wardrobe item replace-photo, avatar body-shape adjustment controls, and a physical-device/TestFlight readiness pass.
 - Development approach is milestone-based.
 - The first milestone should produce a TestFlight-able MVP.
 

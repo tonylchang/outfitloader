@@ -8,7 +8,7 @@ struct LocalDataRepository {
     let modelContext: ModelContext
     let mediaStore: MediaStore
 
-    func deleteAllUserData() throws {
+    func deleteAllUserData() async throws {
         let looks = try modelContext.fetch(FetchDescriptor<OutfitLook>())
         let items = try modelContext.fetch(FetchDescriptor<WardrobeItem>())
         let avatars = try modelContext.fetch(FetchDescriptor<AvatarProfile>())
@@ -32,6 +32,6 @@ struct LocalDataRepository {
             throw error
         }
 
-        mediaStore.deleteAllMedia()
+        await mediaStore.deleteAllMedia()
     }
 }

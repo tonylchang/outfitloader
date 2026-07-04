@@ -44,14 +44,17 @@ struct TryOnComposer {
             cgContext.saveGState()
             cgContext.translateBy(x: avatarRect.midX, y: avatarRect.midY)
             cgContext.rotate(by: avatarAdjustment.rotationRadians)
-            cgContext.setAlpha(avatarAdjustment.opacity)
+            // UIImage.draw(in:) ignores the context alpha, so opacity must be
+            // passed explicitly or it silently renders fully opaque.
             avatarImage.draw(
                 in: CGRect(
                     x: -avatarRect.width / 2,
                     y: -avatarRect.height / 2,
                     width: avatarRect.width,
                     height: avatarRect.height
-                )
+                ),
+                blendMode: .normal,
+                alpha: avatarAdjustment.opacity
             )
             cgContext.restoreGState()
 
@@ -72,14 +75,15 @@ struct TryOnComposer {
                 cgContext.saveGState()
                 cgContext.translateBy(x: center.x, y: center.y)
                 cgContext.rotate(by: avatarAdjustment.rotationRadians + placement.rotationRadians)
-                cgContext.setAlpha(placement.opacity)
                 clothingImage.draw(
                     in: CGRect(
                         x: -clothingWidth / 2,
                         y: -clothingHeight / 2,
                         width: clothingWidth,
                         height: clothingHeight
-                    )
+                    ),
+                    blendMode: .normal,
+                    alpha: placement.opacity
                 )
                 cgContext.restoreGState()
             }

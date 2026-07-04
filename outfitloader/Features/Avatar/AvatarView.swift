@@ -198,11 +198,13 @@ struct AvatarView: View {
     }
 
     private func recreate(_ avatar: AvatarProfile) {
-        do {
-            let repository = AvatarRepository(modelContext: modelContext, mediaStore: mediaStore)
-            try repository.deleteAvatar(avatar)
-        } catch {
-            errorMessage = error.localizedDescription
+        Task {
+            do {
+                let repository = AvatarRepository(modelContext: modelContext, mediaStore: mediaStore)
+                try await repository.deleteAvatar(avatar)
+            } catch {
+                errorMessage = error.localizedDescription
+            }
         }
     }
 }
@@ -244,17 +246,17 @@ private struct AvatarBodyShapePreview: View {
             return
         }
 
-        let store = mediaStore
-        let relativePath = asset.relativePath
-        let kindRawValue = asset.kindRawValue
         let adjustment = adjustment
+        guard let source = await mediaStore.loadImage(
+            relativePath: asset.relativePath,
+            kindRawValue: asset.kindRawValue
+        ) else {
+            image = nil
+            return
+        }
 
         image = await Task.detached(priority: .userInitiated) {
-            guard let source = store.loadImage(relativePath: relativePath, kindRawValue: kindRawValue) else {
-                return nil
-            }
-
-            return AvatarBodyShapeRenderer().render(source, adjustment: adjustment)
+            AvatarBodyShapeRenderer().render(source, adjustment: adjustment)
         }.value
     }
 }

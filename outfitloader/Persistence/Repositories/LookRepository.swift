@@ -42,7 +42,7 @@ struct LookRepository {
         avatarImage: UIImage,
         composition: TryOnComposition,
         wardrobeItems: [WardrobeItem]
-    ) throws -> OutfitLook {
+    ) async throws -> OutfitLook {
         let name = rawName.trimmingCharacters(in: .whitespacesAndNewlines)
         guard composition.canSave else {
             throw LookRepositoryError.emptyLook
@@ -66,9 +66,9 @@ struct LookRepository {
 
         let previewDraft: ImageAssetDraft
         do {
-            previewDraft = try mediaStore.writeOutfitPreview(preview, lookID: lookID)
+            previewDraft = try await mediaStore.writeOutfitPreview(preview, lookID: lookID)
         } catch {
-            mediaStore.deleteOutfitMedia(lookID: lookID)
+            await mediaStore.deleteOutfitMedia(lookID: lookID)
             throw error
         }
 
@@ -111,7 +111,7 @@ struct LookRepository {
             try modelContext.save()
         } catch {
             modelContext.rollback()
-            mediaStore.deleteOutfitMedia(lookID: lookID)
+            await mediaStore.deleteOutfitMedia(lookID: lookID)
             throw error
         }
 
@@ -162,10 +162,11 @@ struct LookRepository {
         )
     }
 
-    func deleteLook(_ look: OutfitLook) throws {
-        mediaStore.deleteOutfitMedia(lookID: look.id)
+    func deleteLook(_ look: OutfitLook) async throws {
+        let lookID = look.id
         modelContext.delete(look)
         try modelContext.save()
+        await mediaStore.deleteOutfitMedia(lookID: lookID)
     }
 
     func refreshPreviews(containing item: WardrobeItem) async {
@@ -192,12 +193,7 @@ struct LookRepository {
     }
 
     private func loadImage(for asset: ImageAsset) async -> UIImage? {
-        let store = mediaStore
-        let relativePath = asset.relativePath
-        let kindRawValue = asset.kindRawValue
-        return await Task.detached(priority: .userInitiated) {
-            store.loadImage(relativePath: relativePath, kindRawValue: kindRawValue)
-        }.value
+        await mediaStore.loadImage(relativePath: asset.relativePath, kindRawValue: asset.kindRawValue)
     }
 
     private func refreshPreview(for look: OutfitLook) async throws {
@@ -245,7 +241,7 @@ struct LookRepository {
             ),
             layers: renderLayers
         )
-        let previewDraft = try mediaStore.writeOutfitPreview(preview, lookID: look.id)
+        let previewDraft = try await mediaStore.writeOutfitPreview(preview, lookID: look.id)
 
         if let previewImage = look.previewImage {
             previewImage.apply(previewDraft)

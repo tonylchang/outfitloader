@@ -17,6 +17,7 @@ struct AddWardrobeItemSheet: View {
     @State private var photoSelection = WardrobePhotoSelection()
     @State private var name = ""
     @State private var selectedKind: CategoryKind = .tops
+    @State private var isSaving = false
 
     var body: some View {
         NavigationStack {
@@ -37,7 +38,7 @@ struct AddWardrobeItemSheet: View {
                     Button("Save") {
                         save()
                     }
-                    .disabled(photoSelection.originalImage == nil || photoSelection.isExtracting)
+                    .disabled(photoSelection.originalImage == nil || photoSelection.isExtracting || isSaving)
                 }
             }
             .fullScreenCover(isPresented: $showingCamera) {
@@ -146,19 +147,24 @@ struct AddWardrobeItemSheet: View {
         let trimmedName = name.trimmingCharacters(in: .whitespacesAndNewlines)
         let category = categories.first { $0.kindRawValue == selectedKind.rawValue }
 
-        do {
-            let repository = WardrobeRepository(modelContext: modelContext, mediaStore: mediaStore)
-            try repository.createItem(
-                named: trimmedName.isEmpty ? selectedKind.newItemName : trimmedName,
-                kind: selectedKind,
-                category: category,
-                originalImage: originalImage,
-                processedImage: photoSelection.processedImageForSave,
-                capturedFrom: photoSelection.imageSource
-            )
-            dismiss()
-        } catch {
-            photoSelection.errorMessage = error.localizedDescription
+        isSaving = true
+        Task {
+            do {
+                let repository = WardrobeRepository(modelContext: modelContext, mediaStore: mediaStore)
+                try await repository.createItem(
+                    named: trimmedName.isEmpty ? selectedKind.newItemName : trimmedName,
+                    kind: selectedKind,
+                    category: category,
+                    originalImage: originalImage,
+                    processedImage: photoSelection.processedImageForSave,
+                    capturedFrom: photoSelection.imageSource
+                )
+                dismiss()
+            } catch {
+                photoSelection.errorMessage = error.localizedDescription
+            }
+
+            isSaving = false
         }
     }
 }

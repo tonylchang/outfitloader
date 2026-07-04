@@ -138,12 +138,14 @@ private struct LookbookDetailView: View {
     }
 
     private func deleteLook() {
-        do {
-            let repository = LookRepository(modelContext: modelContext, mediaStore: mediaStore)
-            try repository.deleteLook(look)
-            dismiss()
-        } catch {
-            errorMessage = error.localizedDescription
+        Task {
+            do {
+                let repository = LookRepository(modelContext: modelContext, mediaStore: mediaStore)
+                try await repository.deleteLook(look)
+                dismiss()
+            } catch {
+                errorMessage = error.localizedDescription
+            }
         }
     }
 }

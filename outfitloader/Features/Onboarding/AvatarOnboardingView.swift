@@ -212,15 +212,17 @@ struct AvatarOnboardingView: View {
             return
         }
 
-        do {
-            let repository = AvatarRepository(modelContext: modelContext, mediaStore: mediaStore)
-            try repository.createAvatar(
-                sourceImage: sourceImage,
-                silhouetteImage: silhouetteImage,
-                capturedFrom: imageSource
-            )
-        } catch {
-            errorMessage = error.localizedDescription
+        Task {
+            do {
+                let repository = AvatarRepository(modelContext: modelContext, mediaStore: mediaStore)
+                try await repository.createAvatar(
+                    sourceImage: sourceImage,
+                    silhouetteImage: silhouetteImage,
+                    capturedFrom: imageSource
+                )
+            } catch {
+                errorMessage = error.localizedDescription
+            }
         }
     }
 

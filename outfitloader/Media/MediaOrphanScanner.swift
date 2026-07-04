@@ -10,15 +10,23 @@ struct MediaOrphanScanReport: Equatable {
     /// Files on disk that no ImageAsset row references.
     var orphanedDurableFileCount = 0
     var orphanedCachedFileCount = 0
+    /// Non-regenerable originals whose bytes no longer match the SHA-256
+    /// recorded at write time.
+    var hashMismatchCount = 0
 
     var hasFindings: Bool {
-        !missingFilesByKind.isEmpty || orphanedDurableFileCount > 0 || orphanedCachedFileCount > 0
+        !missingFilesByKind.isEmpty
+            || orphanedDurableFileCount > 0
+            || orphanedCachedFileCount > 0
+            || hashMismatchCount > 0
     }
 }
 
 /// Debug-only integrity check for the media write/delete rules: every row has
 /// a file, and every file has a row. Findings mean a transaction cleanup path
-/// is broken somewhere.
+/// is broken somewhere. Only non-regenerable originals are hash-verified;
+/// regenerable derivatives are legitimately rewritten in place (thumbnail
+/// cache refills), so their bytes drift from the recorded digest by design.
 @MainActor
 struct MediaOrphanScanner {
     let modelContext: ModelContext
@@ -27,7 +35,7 @@ struct MediaOrphanScanner {
     func scan() async throws -> MediaOrphanScanReport {
         let assets = try modelContext.fetch(FetchDescriptor<ImageAsset>())
         let references = assets.map {
-            (relativePath: $0.relativePath, kindRawValue: $0.kindRawValue)
+            (relativePath: $0.relativePath, kindRawValue: $0.kindRawValue, sha256: $0.sha256)
         }
 
         var report = MediaOrphanScanReport()
@@ -46,8 +54,16 @@ struct MediaOrphanScanner {
                 referencedDurable.insert(reference.relativePath)
             }
 
-            if await !mediaStore.fileExists(relativePath: reference.relativePath, kind: kind) {
+            guard await mediaStore.fileExists(relativePath: reference.relativePath, kind: kind) else {
                 report.missingFilesByKind[reference.kindRawValue, default: 0] += 1
+                continue
+            }
+
+            if !kind.isRegenerable,
+               let expected = reference.sha256,
+               let actual = await mediaStore.fileSHA256(relativePath: reference.relativePath, kind: kind),
+               actual != expected {
+                report.hashMismatchCount += 1
             }
         }
 

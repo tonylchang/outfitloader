@@ -191,6 +191,22 @@ actor MediaStore {
         return FileManager.default.fileExists(atPath: url.path)
     }
 
+    /// SHA-256 of the file at the given location, for the debug integrity
+    /// scan to compare against the digest recorded at write time.
+    func fileSHA256(relativePath: String, kind: ImageAssetKind) -> String? {
+        guard let url = try? fileURL(relativePath: relativePath, kind: kind),
+              let data = try? Data(contentsOf: url)
+        else {
+            return nil
+        }
+
+        return Self.digest(of: data)
+    }
+
+    private static func digest(of data: Data) -> String {
+        SHA256.hash(data: data).map { String(format: "%02x", $0) }.joined()
+    }
+
     /// Relative paths of every file under both roots, for the debug orphan scan.
     func listAllRelativePaths() -> (durable: Set<String>, cached: Set<String>) {
         (
@@ -384,8 +400,6 @@ actor MediaStore {
         )
         try data.write(to: url, options: [.atomic, .completeFileProtection])
 
-        let digest = SHA256.hash(data: data).map { String(format: "%02x", $0) }.joined()
-
         return ImageAssetDraft(
             id: assetID,
             kind: kind,
@@ -395,7 +409,7 @@ actor MediaStore {
             pixelHeight: image.cgImage?.height ?? Int(image.size.height * image.scale),
             byteCount: Int64(data.count),
             source: source,
-            sha256: digest,
+            sha256: Self.digest(of: data),
             isRegenerable: kind.isRegenerable
         )
     }

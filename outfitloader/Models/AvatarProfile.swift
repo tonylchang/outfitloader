@@ -1,8 +1,9 @@
 import Foundation
 import SwiftData
 
+/// Silhouette processing happens before the profile row is created, so a
+/// profile is only ever saved as ready or failed.
 enum AvatarProcessingStatus: String {
-    case pending
     /// A transparent silhouette was generated from the source selfie.
     case ready
     /// Vision could not isolate a person; the original photo stands in for the silhouette.
@@ -36,7 +37,7 @@ final class AvatarProfile {
         updatedAt: Date = .now,
         displayName: String? = nil,
         isActive: Bool = true,
-        processingStatus: AvatarProcessingStatus = .pending,
+        processingStatus: AvatarProcessingStatus,
         heightCentimeters: Double? = nil,
         shoulderAdjustment: Double = 0,
         torsoAdjustment: Double = 0,

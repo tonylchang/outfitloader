@@ -15,7 +15,6 @@ final class OutfitLook {
     var avatarRotationDegrees: Double = 0
     var avatarOpacity: Double = 1
     var notes: String?
-    var sortIndex: Int
     var isArchived: Bool
 
     init(
@@ -27,7 +26,6 @@ final class OutfitLook {
         avatarRotationDegrees: Double = 0,
         avatarOpacity: Double = 1,
         notes: String? = nil,
-        sortIndex: Int = 0,
         isArchived: Bool = false
     ) {
         self.id = id
@@ -39,7 +37,6 @@ final class OutfitLook {
         self.avatarRotationDegrees = avatarRotationDegrees
         self.avatarOpacity = avatarOpacity
         self.notes = notes
-        self.sortIndex = sortIndex
         self.isArchived = isArchived
     }
 }

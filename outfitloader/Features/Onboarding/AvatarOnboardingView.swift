@@ -50,17 +50,7 @@ struct AvatarOnboardingView: View {
                     await loadPickedImage(newItem)
                 }
             }
-            .alert(
-                "Couldn't Save Avatar",
-                isPresented: Binding(
-                    get: { errorMessage != nil },
-                    set: { if !$0 { errorMessage = nil } }
-                )
-            ) {
-                Button("OK", role: .cancel) {}
-            } message: {
-                Text(errorMessage ?? "")
-            }
+            .errorAlert("Couldn't Save Avatar", message: $errorMessage)
         }
     }
 

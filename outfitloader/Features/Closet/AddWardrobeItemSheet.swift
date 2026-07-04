@@ -55,17 +55,7 @@ struct AddWardrobeItemSheet: View {
                     await photoSelection.loadPickedImage(newItem)
                 }
             }
-            .alert(
-                "Couldn't Save Item",
-                isPresented: Binding(
-                    get: { photoSelection.errorMessage != nil },
-                    set: { if !$0 { photoSelection.errorMessage = nil } }
-                )
-            ) {
-                Button("OK", role: .cancel) {}
-            } message: {
-                Text(photoSelection.errorMessage ?? "")
-            }
+            .errorAlert("Couldn't Save Item", message: $photoSelection.errorMessage)
         }
     }
 

@@ -124,41 +124,19 @@ struct LookRepository {
             throw LookRepositoryError.missingAvatar
         }
 
-        let layers = try await look.slots
-            .sorted { $0.zIndex < $1.zIndex }
-            .asyncMap { slot in
-                guard let item = slot.wardrobeItem else {
-                    throw LookRepositoryError.missingWardrobeItem(slot.categoryKind?.displayName ?? "Clothing item")
-                }
-
-                guard let asset = item.displayImage,
-                      let image = await loadImage(for: asset)
-                else {
-                    throw LookRepositoryError.missingImage(item.name)
-                }
-
-                let kind = slot.categoryKind ?? item.categoryKind ?? .tops
-                return TryOnLayer(
-                    id: slot.id,
-                    itemID: item.id,
-                    itemName: item.name,
-                    categoryKind: kind,
-                    image: image,
-                    placement: ClothingPlacement(
-                        anchor: CGPoint(x: slot.anchorX, y: slot.anchorY),
-                        scale: CGFloat(slot.scale),
-                        rotationRadians: CGFloat(slot.rotationDegrees) * .pi / 180,
-                        opacity: CGFloat(slot.opacity)
-                    )
-                )
-            }
+        let layers = try await hydrateSlots(of: look).map { hydrated in
+            TryOnLayer(
+                id: hydrated.slot.id,
+                itemID: hydrated.item.id,
+                itemName: hydrated.item.name,
+                categoryKind: hydrated.slot.categoryKind ?? hydrated.item.categoryKind ?? .tops,
+                image: hydrated.image,
+                placement: hydrated.placement
+            )
+        }
 
         return HydratedLookComposition(
-            avatarAdjustment: AvatarAdjustment(
-                scale: CGFloat(look.avatarScale),
-                rotationRadians: CGFloat(look.avatarRotationDegrees) * .pi / 180,
-                opacity: CGFloat(look.avatarOpacity)
-            ),
+            avatarAdjustment: look.savedAvatarAdjustment,
             layers: layers
         )
     }
@@ -193,6 +171,45 @@ struct LookRepository {
         }
     }
 
+    /// One saved slot resolved to live data, in z order: the wardrobe item,
+    /// its display image, and the stored placement.
+    private struct HydratedSlot {
+        let slot: OutfitSlot
+        let item: WardrobeItem
+        let image: UIImage
+        let placement: ClothingPlacement
+    }
+
+    /// Single hydration path for reopening looks and re-rendering previews,
+    /// so the two flows cannot drift in how they resolve saved slots.
+    private func hydrateSlots(of look: OutfitLook) async throws -> [HydratedSlot] {
+        try await look.slots
+            .sorted { $0.zIndex < $1.zIndex }
+            .asyncMap { slot in
+                guard let item = slot.wardrobeItem else {
+                    throw LookRepositoryError.missingWardrobeItem(slot.categoryKind?.displayName ?? "Clothing item")
+                }
+
+                guard let asset = item.displayImage,
+                      let image = await loadImage(for: asset)
+                else {
+                    throw LookRepositoryError.missingImage(item.name)
+                }
+
+                return HydratedSlot(
+                    slot: slot,
+                    item: item,
+                    image: image,
+                    placement: ClothingPlacement(
+                        anchor: CGPoint(x: slot.anchorX, y: slot.anchorY),
+                        scale: CGFloat(slot.scale),
+                        rotationRadians: CGFloat(slot.rotationDegrees) * .pi / 180,
+                        opacity: CGFloat(slot.opacity)
+                    )
+                )
+            }
+    }
+
     private func loadImage(for asset: ImageAsset) async -> UIImage? {
         await mediaStore.loadImage(relativePath: asset.relativePath, kindRawValue: asset.kindRawValue)
     }
@@ -208,38 +225,13 @@ struct LookRepository {
             adjustment: look.avatarProfile?.bodyShapeAdjustment ?? .neutral
         )
 
-        let renderLayers = try await look.slots
-            .sorted { $0.zIndex < $1.zIndex }
-            .asyncMap { slot in
-                guard let item = slot.wardrobeItem else {
-                    throw LookRepositoryError.missingWardrobeItem(slot.categoryKind?.displayName ?? "Clothing item")
-                }
-
-                guard let asset = item.displayImage,
-                      let image = await loadImage(for: asset)
-                else {
-                    throw LookRepositoryError.missingImage(item.name)
-                }
-
-                return OutfitRenderLayer(
-                    image: image,
-                    placement: ClothingPlacement(
-                        anchor: CGPoint(x: slot.anchorX, y: slot.anchorY),
-                        scale: CGFloat(slot.scale),
-                        rotationRadians: CGFloat(slot.rotationDegrees) * .pi / 180,
-                        opacity: CGFloat(slot.opacity)
-                    ),
-                    zIndex: slot.zIndex
-                )
-            }
+        let renderLayers = try await hydrateSlots(of: look).map { hydrated in
+            OutfitRenderLayer(image: hydrated.image, placement: hydrated.placement, zIndex: hydrated.slot.zIndex)
+        }
 
         let preview = TryOnComposer().compose(
             avatar: renderedAvatar,
-            avatarAdjustment: AvatarAdjustment(
-                scale: CGFloat(look.avatarScale),
-                rotationRadians: CGFloat(look.avatarRotationDegrees) * .pi / 180,
-                opacity: CGFloat(look.avatarOpacity)
-            ),
+            avatarAdjustment: look.savedAvatarAdjustment,
             layers: renderLayers
         )
         let previewDraft = try await mediaStore.writeOutfitPreview(preview, lookID: look.id)
@@ -251,6 +243,17 @@ struct LookRepository {
         }
 
         look.updatedAt = .now
+    }
+}
+
+private extension OutfitLook {
+    /// The avatar transform captured when the look was saved.
+    var savedAvatarAdjustment: AvatarAdjustment {
+        AvatarAdjustment(
+            scale: CGFloat(avatarScale),
+            rotationRadians: CGFloat(avatarRotationDegrees) * .pi / 180,
+            opacity: CGFloat(avatarOpacity)
+        )
     }
 }
 

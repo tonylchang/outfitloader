@@ -1,52 +1,64 @@
 import SwiftData
+import Testing
 import UIKit
-import XCTest
 @testable import outfitloader
 
+/// Saved-look transactions: create with preview and slots, hydrate back into
+/// try-on state, refresh previews, and the wardrobe delete-blocking contract.
 @MainActor
-final class LookRepositoryTests: XCTestCase {
-    private var store: InMemoryStore!
-    private var mediaStore: MediaStore!
+final class LookRepositoryTests {
+    private let container: ModelContainer
+    private let context: ModelContext
+    private let mediaStore: MediaStore
+    private let cleanupRoot: URL
 
-    override func setUp() async throws {
-        store = try InMemoryStore()
+    init() throws {
+        container = try ModelContainerFactory.makeInMemory()
+        context = ModelContext(container)
 
-        let base = FileManager.default.temporaryDirectory
+        cleanupRoot = FileManager.default.temporaryDirectory
             .appending(path: "LookRepositoryTests-\(UUID().uuidString)", directoryHint: .isDirectory)
-        try FileManager.default.createDirectory(at: base, withIntermediateDirectories: true)
+        try FileManager.default.createDirectory(at: cleanupRoot, withIntermediateDirectories: true)
         mediaStore = MediaStore(
-            mediaRootOverride: base.appending(path: "Media", directoryHint: .isDirectory),
-            cachesRootOverride: base.appending(path: "Caches", directoryHint: .isDirectory)
+            mediaRootOverride: cleanupRoot.appending(path: "Media", directoryHint: .isDirectory),
+            cachesRootOverride: cleanupRoot.appending(path: "Caches", directoryHint: .isDirectory)
         )
-        addTeardownBlock {
-            try? FileManager.default.removeItem(at: base)
-        }
     }
 
-    func testCreateLookPersistsPreviewSlotsAndHydratesComposition() async throws {
-        let avatarID = UUID()
-        let avatarImage = TestImageFactory.makeImage(size: CGSize(width: 64, height: 128), color: .systemBlue)
-        let clothingImage = TestImageFactory.makeImage(size: CGSize(width: 48, height: 48), color: .systemRed)
+    deinit {
+        try? FileManager.default.removeItem(at: cleanupRoot)
+    }
 
+    private func makeAvatar(image: UIImage) async throws -> AvatarProfile {
+        let avatarID = UUID()
         let avatar = AvatarProfile(id: avatarID, processingStatus: .ready)
         avatar.silhouetteImage = ImageAsset(
-            draft: try await mediaStore.writeAvatarSilhouette(avatarImage, avatarID: avatarID)
+            draft: try await mediaStore.writeAvatarSilhouette(image, avatarID: avatarID)
         )
-        store.context.insert(avatar)
+        context.insert(avatar)
+        return avatar
+    }
 
-        let wardrobeRepository = WardrobeRepository(modelContext: store.context, mediaStore: mediaStore)
-        let item = try await wardrobeRepository.createItem(
-            named: "Red Shirt",
+    private func makeItem(named name: String, image: UIImage) async throws -> WardrobeItem {
+        try await WardrobeRepository(modelContext: context, mediaStore: mediaStore).createItem(
+            named: name,
             kind: .tops,
-            originalImage: clothingImage,
+            originalImage: image,
             processedImage: nil,
-            capturedFrom: .photoLibrary
+            capturedFrom: .camera
         )
+    }
+
+    @Test func createLookPersistsPreviewSlotsAndHydratesComposition() async throws {
+        let avatarImage = TestImageFactory.makeImage(size: CGSize(width: 64, height: 128), color: .systemBlue)
+        let clothingImage = TestImageFactory.makeImage(size: CGSize(width: 48, height: 48), color: .systemRed)
+        let avatar = try await makeAvatar(image: avatarImage)
+        let item = try await makeItem(named: "Red Shirt", image: clothingImage)
 
         let composition = TryOnComposition()
         composition.avatarAdjustment = AvatarAdjustment(scale: 1.12, rotationRadians: .pi / 18, opacity: 0.82)
         composition.place(itemID: item.id, name: item.name, kind: .tops, image: clothingImage)
-        let layerID = try XCTUnwrap(composition.sortedLayers.first?.id)
+        let layerID = try #require(composition.sortedLayers.first?.id)
         composition.updatePlacement(layerID: layerID) { placement in
             placement.anchor = CGPoint(x: 0.42, y: 0.31)
             placement.scale = 0.58
@@ -54,7 +66,7 @@ final class LookRepositoryTests: XCTestCase {
             placement.opacity = 0.77
         }
 
-        let lookRepository = LookRepository(modelContext: store.context, mediaStore: mediaStore)
+        let lookRepository = LookRepository(modelContext: context, mediaStore: mediaStore)
         let look = try await lookRepository.createLook(
             named: "  Test Fit  ",
             avatar: avatar,
@@ -63,27 +75,28 @@ final class LookRepositoryTests: XCTestCase {
             wardrobeItems: [item]
         )
 
-        XCTAssertEqual(look.name, "Test Fit")
-        XCTAssertEqual(look.slots.count, 1)
-        XCTAssertNotNil(look.previewImage)
-        XCTAssertEqual(look.avatarScale, 1.12, accuracy: 0.001)
-        XCTAssertEqual(look.avatarOpacity, 0.82, accuracy: 0.001)
+        #expect(look.name == "Test Fit")
+        #expect(look.slots.count == 1)
+        #expect(look.previewImage != nil)
+        #expect(abs(look.avatarScale - 1.12) < 0.001)
+        #expect(abs(look.avatarOpacity - 0.82) < 0.001)
 
         let hydrated = try await lookRepository.hydrateComposition(from: look)
 
-        XCTAssertEqual(hydrated.layers.count, 1)
-        XCTAssertEqual(hydrated.avatarAdjustment.scale, 1.12, accuracy: 0.001)
-        XCTAssertEqual(hydrated.avatarAdjustment.opacity, 0.82, accuracy: 0.001)
-        XCTAssertEqual(hydrated.layers[0].itemID, item.id)
-        XCTAssertEqual(hydrated.layers[0].placement.anchor.x, 0.42, accuracy: 0.001)
-        XCTAssertEqual(hydrated.layers[0].placement.anchor.y, 0.31, accuracy: 0.001)
-        XCTAssertEqual(hydrated.layers[0].placement.scale, 0.58, accuracy: 0.001)
-        XCTAssertEqual(hydrated.layers[0].placement.opacity, 0.77, accuracy: 0.001)
+        #expect(hydrated.layers.count == 1)
+        #expect(abs(hydrated.avatarAdjustment.scale - 1.12) < 0.001)
+        #expect(abs(hydrated.avatarAdjustment.opacity - 0.82) < 0.001)
+        let layer = try #require(hydrated.layers.first)
+        #expect(layer.itemID == item.id)
+        #expect(abs(layer.placement.anchor.x - 0.42) < 0.001)
+        #expect(abs(layer.placement.anchor.y - 0.31) < 0.001)
+        #expect(abs(layer.placement.scale - 0.58) < 0.001)
+        #expect(abs(layer.placement.opacity - 0.77) < 0.001)
     }
 
-    func testCreateLookRejectsMissingWardrobeItem() async throws {
+    @Test func createLookRejectsMissingWardrobeItem() async throws {
         let avatar = AvatarProfile(processingStatus: .ready)
-        store.context.insert(avatar)
+        context.insert(avatar)
 
         let composition = TryOnComposition()
         composition.place(
@@ -93,9 +106,9 @@ final class LookRepositoryTests: XCTestCase {
             image: TestImageFactory.makeImage(size: CGSize(width: 32, height: 32), color: .systemRed)
         )
 
-        let repository = LookRepository(modelContext: store.context, mediaStore: mediaStore)
+        let repository = LookRepository(modelContext: context, mediaStore: mediaStore)
 
-        do {
+        await #expect(throws: LookRepositoryError.missingWardrobeItem("Missing Shirt")) {
             _ = try await repository.createLook(
                 named: "Missing Item",
                 avatar: avatar,
@@ -103,35 +116,18 @@ final class LookRepositoryTests: XCTestCase {
                 composition: composition,
                 wardrobeItems: []
             )
-            XCTFail("Expected createLook to throw for a missing wardrobe item")
-        } catch {
-            XCTAssertEqual(error.localizedDescription, "Missing Shirt is no longer available in the closet.")
         }
     }
 
-    func testWardrobeDeleteIsBlockedWhenItemIsUsedBySavedLook() async throws {
-        let avatarID = UUID()
+    @Test func wardrobeDeleteIsBlockedWhenItemIsUsedBySavedLook() async throws {
         let avatarImage = TestImageFactory.makeImage(size: CGSize(width: 64, height: 128), color: .systemBlue)
         let clothingImage = TestImageFactory.makeImage(size: CGSize(width: 48, height: 48), color: .systemGreen)
-
-        let avatar = AvatarProfile(id: avatarID, processingStatus: .ready)
-        avatar.silhouetteImage = ImageAsset(
-            draft: try await mediaStore.writeAvatarSilhouette(avatarImage, avatarID: avatarID)
-        )
-        store.context.insert(avatar)
-
-        let wardrobeRepository = WardrobeRepository(modelContext: store.context, mediaStore: mediaStore)
-        let item = try await wardrobeRepository.createItem(
-            named: "Green Shirt",
-            kind: .tops,
-            originalImage: clothingImage,
-            processedImage: nil,
-            capturedFrom: .camera
-        )
+        let avatar = try await makeAvatar(image: avatarImage)
+        let item = try await makeItem(named: "Green Shirt", image: clothingImage)
 
         let composition = TryOnComposition()
         composition.place(itemID: item.id, name: item.name, kind: .tops, image: clothingImage)
-        _ = try await LookRepository(modelContext: store.context, mediaStore: mediaStore).createLook(
+        _ = try await LookRepository(modelContext: context, mediaStore: mediaStore).createLook(
             named: "Saved Look",
             avatar: avatar,
             avatarImage: avatarImage,
@@ -139,25 +135,46 @@ final class LookRepositoryTests: XCTestCase {
             wardrobeItems: [item]
         )
 
-        do {
+        let wardrobeRepository = WardrobeRepository(modelContext: context, mediaStore: mediaStore)
+        await #expect(throws: WardrobeRepositoryError.itemUsedInLooks(count: 1)) {
             try await wardrobeRepository.deleteItem(item)
-            XCTFail("Expected deleteItem to throw while the item is used by a saved look")
-        } catch {
-            XCTAssertEqual(
-                error.localizedDescription,
-                "This item is used in 1 saved look. Delete those looks before deleting this item."
-            )
         }
     }
-}
 
-private struct InMemoryStore {
-    let container: ModelContainer
-    let context: ModelContext
+    @Test func refreshPreviewsRewritesOnlyLooksContainingTheItem() async throws {
+        let avatarImage = TestImageFactory.makeImage(size: CGSize(width: 64, height: 128), color: .systemBlue)
+        let redImage = TestImageFactory.makeImage(size: CGSize(width: 48, height: 48), color: .systemRed)
+        let greenImage = TestImageFactory.makeImage(size: CGSize(width: 48, height: 48), color: .systemGreen)
+        let avatar = try await makeAvatar(image: avatarImage)
+        let redItem = try await makeItem(named: "Red Shirt", image: redImage)
+        let greenItem = try await makeItem(named: "Green Shirt", image: greenImage)
 
-    @MainActor
-    init() throws {
-        container = try ModelContainerFactory.makeInMemory()
-        context = ModelContext(container)
+        let lookRepository = LookRepository(modelContext: context, mediaStore: mediaStore)
+        var looks: [OutfitLook] = []
+        for item in [redItem, greenItem] {
+            let composition = TryOnComposition()
+            let image = item.id == redItem.id ? redImage : greenImage
+            composition.place(itemID: item.id, name: item.name, kind: .tops, image: image)
+            looks.append(try await lookRepository.createLook(
+                named: "\(item.name) Look",
+                avatar: avatar,
+                avatarImage: avatarImage,
+                composition: composition,
+                wardrobeItems: [redItem, greenItem]
+            ))
+        }
+
+        let redPreview = try #require(looks[0].previewImage)
+        let greenPreview = try #require(looks[1].previewImage)
+        let redUpdatedAt = redPreview.updatedAt
+        let greenUpdatedAt = greenPreview.updatedAt
+        let redPath = redPreview.relativePath
+
+        await lookRepository.refreshPreviews(containing: redItem)
+
+        // The containing look re-rendered in place: same path, newer stamp.
+        #expect(redPreview.relativePath == redPath)
+        #expect(redPreview.updatedAt > redUpdatedAt)
+        #expect(greenPreview.updatedAt == greenUpdatedAt)
     }
 }

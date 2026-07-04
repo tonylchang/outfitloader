@@ -2,7 +2,7 @@ import Foundation
 import SwiftData
 import UIKit
 
-enum WardrobeRepositoryError: LocalizedError {
+enum WardrobeRepositoryError: LocalizedError, Equatable {
     case itemUsedInLooks(count: Int)
 
     var errorDescription: String? {

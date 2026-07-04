@@ -9,6 +9,7 @@
 - Empty states now lead to the action that fills them: Lookbook links to Try On, the Try On shelf links to the Closet, and a filtered-empty Closet offers Add Item and Show All.
 - VoiceOver custom actions on the try-on canvas: move a placed item up/down/left/right in 5% steps, remove it, and hear its position; the avatar and layers now expose button and selected-state traits.
 - Test coverage for MediaStore file IO, TryOnComposer rendering (including opacity blending and z-order), WardrobeRepository create/replace/delete transactions, and the clothing-extraction fallback contract.
+- Test coverage for try-on canvas state (placement, category replacement, selection, reset), AvatarRepository transactions, the delete-all-data contract, and preview refreshes; look tests now run on Swift Testing and match typed error cases instead of display strings.
 
 ### Changed
 

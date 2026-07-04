@@ -2,7 +2,7 @@ import Foundation
 import SwiftData
 import UIKit
 
-enum LookRepositoryError: LocalizedError {
+enum LookRepositoryError: LocalizedError, Equatable {
     case emptyLook
     case missingAvatar
     case missingWardrobeItem(String)

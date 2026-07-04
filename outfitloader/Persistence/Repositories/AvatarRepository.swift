@@ -16,18 +16,18 @@ struct AvatarRepository {
         silhouetteImage: UIImage?,
         capturedFrom source: ImageSource,
         displayName: String? = nil
-    ) throws -> AvatarProfile {
+    ) async throws -> AvatarProfile {
         let avatarID = UUID()
 
         let originalDraft: ImageAssetDraft
         var silhouetteDraft: ImageAssetDraft?
         do {
-            originalDraft = try mediaStore.writeAvatarOriginal(sourceImage, avatarID: avatarID, source: source)
+            originalDraft = try await mediaStore.writeAvatarOriginal(sourceImage, avatarID: avatarID, source: source)
             if let silhouetteImage {
-                silhouetteDraft = try mediaStore.writeAvatarSilhouette(silhouetteImage, avatarID: avatarID)
+                silhouetteDraft = try await mediaStore.writeAvatarSilhouette(silhouetteImage, avatarID: avatarID)
             }
         } catch {
-            mediaStore.deleteAvatarMedia(avatarID: avatarID)
+            await mediaStore.deleteAvatarMedia(avatarID: avatarID)
             throw error
         }
 
@@ -53,16 +53,17 @@ struct AvatarRepository {
             try modelContext.save()
         } catch {
             modelContext.rollback()
-            mediaStore.deleteAvatarMedia(avatarID: avatarID)
+            await mediaStore.deleteAvatarMedia(avatarID: avatarID)
             throw error
         }
 
         return profile
     }
 
-    func deleteAvatar(_ profile: AvatarProfile) throws {
-        mediaStore.deleteAvatarMedia(avatarID: profile.id)
+    func deleteAvatar(_ profile: AvatarProfile) async throws {
+        let avatarID = profile.id
         modelContext.delete(profile)
         try modelContext.save()
+        await mediaStore.deleteAvatarMedia(avatarID: avatarID)
     }
 }

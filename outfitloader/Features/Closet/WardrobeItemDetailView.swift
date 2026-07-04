@@ -118,12 +118,14 @@ struct WardrobeItemDetailView: View {
     }
 
     private func deleteItem() {
-        do {
-            let repository = WardrobeRepository(modelContext: modelContext, mediaStore: mediaStore)
-            try repository.deleteItem(item)
-            dismiss()
-        } catch {
-            errorMessage = error.localizedDescription
+        Task {
+            do {
+                let repository = WardrobeRepository(modelContext: modelContext, mediaStore: mediaStore)
+                try await repository.deleteItem(item)
+                dismiss()
+            } catch {
+                errorMessage = error.localizedDescription
+            }
         }
     }
 }

@@ -5,24 +5,37 @@ import XCTest
 
 @MainActor
 final class LookRepositoryTests: XCTestCase {
+    private var store: InMemoryStore!
+    private var mediaStore: MediaStore!
+
+    override func setUp() async throws {
+        store = try InMemoryStore()
+
+        let base = FileManager.default.temporaryDirectory
+            .appending(path: "LookRepositoryTests-\(UUID().uuidString)", directoryHint: .isDirectory)
+        try FileManager.default.createDirectory(at: base, withIntermediateDirectories: true)
+        mediaStore = MediaStore(
+            mediaRootOverride: base.appending(path: "Media", directoryHint: .isDirectory),
+            cachesRootOverride: base.appending(path: "Caches", directoryHint: .isDirectory)
+        )
+        addTeardownBlock {
+            try? FileManager.default.removeItem(at: base)
+        }
+    }
+
     func testCreateLookPersistsPreviewSlotsAndHydratesComposition() async throws {
-        let store = try InMemoryStore()
-        let mediaStore = MediaStore()
         let avatarID = UUID()
         let avatarImage = TestImageFactory.makeImage(size: CGSize(width: 64, height: 128), color: .systemBlue)
         let clothingImage = TestImageFactory.makeImage(size: CGSize(width: 48, height: 48), color: .systemRed)
-        defer {
-            mediaStore.deleteAvatarMedia(avatarID: avatarID)
-        }
 
         let avatar = AvatarProfile(id: avatarID, processingStatus: .ready)
         avatar.silhouetteImage = ImageAsset(
-            draft: try mediaStore.writeAvatarSilhouette(avatarImage, avatarID: avatarID)
+            draft: try await mediaStore.writeAvatarSilhouette(avatarImage, avatarID: avatarID)
         )
         store.context.insert(avatar)
 
         let wardrobeRepository = WardrobeRepository(modelContext: store.context, mediaStore: mediaStore)
-        let item = try wardrobeRepository.createItem(
+        let item = try await wardrobeRepository.createItem(
             named: "Red Shirt",
             kind: .tops,
             category: nil,
@@ -30,9 +43,6 @@ final class LookRepositoryTests: XCTestCase {
             processedImage: nil,
             capturedFrom: .photoLibrary
         )
-        defer {
-            mediaStore.deleteWardrobeMedia(itemID: item.id)
-        }
 
         let composition = TryOnComposition()
         composition.avatarAdjustment = AvatarAdjustment(scale: 1.12, rotationRadians: .pi / 18, opacity: 0.82)
@@ -46,16 +56,13 @@ final class LookRepositoryTests: XCTestCase {
         }
 
         let lookRepository = LookRepository(modelContext: store.context, mediaStore: mediaStore)
-        let look = try lookRepository.createLook(
+        let look = try await lookRepository.createLook(
             named: "  Test Fit  ",
             avatar: avatar,
             avatarImage: avatarImage,
             composition: composition,
             wardrobeItems: [item]
         )
-        defer {
-            mediaStore.deleteOutfitMedia(lookID: look.id)
-        }
 
         XCTAssertEqual(look.name, "Test Fit")
         XCTAssertEqual(look.slots.count, 1)
@@ -75,9 +82,7 @@ final class LookRepositoryTests: XCTestCase {
         XCTAssertEqual(hydrated.layers[0].placement.opacity, 0.77, accuracy: 0.001)
     }
 
-    func testCreateLookRejectsMissingWardrobeItem() throws {
-        let store = try InMemoryStore()
-        let mediaStore = MediaStore()
+    func testCreateLookRejectsMissingWardrobeItem() async throws {
         let avatar = AvatarProfile(processingStatus: .ready)
         store.context.insert(avatar)
 
@@ -91,37 +96,33 @@ final class LookRepositoryTests: XCTestCase {
 
         let repository = LookRepository(modelContext: store.context, mediaStore: mediaStore)
 
-        XCTAssertThrowsError(
-            try repository.createLook(
+        do {
+            _ = try await repository.createLook(
                 named: "Missing Item",
                 avatar: avatar,
                 avatarImage: TestImageFactory.makeImage(size: CGSize(width: 64, height: 128), color: .systemBlue),
                 composition: composition,
                 wardrobeItems: []
             )
-        ) { error in
+            XCTFail("Expected createLook to throw for a missing wardrobe item")
+        } catch {
             XCTAssertEqual(error.localizedDescription, "Missing Shirt is no longer available in the closet.")
         }
     }
 
-    func testWardrobeDeleteIsBlockedWhenItemIsUsedBySavedLook() throws {
-        let store = try InMemoryStore()
-        let mediaStore = MediaStore()
+    func testWardrobeDeleteIsBlockedWhenItemIsUsedBySavedLook() async throws {
         let avatarID = UUID()
         let avatarImage = TestImageFactory.makeImage(size: CGSize(width: 64, height: 128), color: .systemBlue)
         let clothingImage = TestImageFactory.makeImage(size: CGSize(width: 48, height: 48), color: .systemGreen)
-        defer {
-            mediaStore.deleteAvatarMedia(avatarID: avatarID)
-        }
 
         let avatar = AvatarProfile(id: avatarID, processingStatus: .ready)
         avatar.silhouetteImage = ImageAsset(
-            draft: try mediaStore.writeAvatarSilhouette(avatarImage, avatarID: avatarID)
+            draft: try await mediaStore.writeAvatarSilhouette(avatarImage, avatarID: avatarID)
         )
         store.context.insert(avatar)
 
         let wardrobeRepository = WardrobeRepository(modelContext: store.context, mediaStore: mediaStore)
-        let item = try wardrobeRepository.createItem(
+        let item = try await wardrobeRepository.createItem(
             named: "Green Shirt",
             kind: .tops,
             category: nil,
@@ -129,24 +130,21 @@ final class LookRepositoryTests: XCTestCase {
             processedImage: nil,
             capturedFrom: .camera
         )
-        defer {
-            mediaStore.deleteWardrobeMedia(itemID: item.id)
-        }
 
         let composition = TryOnComposition()
         composition.place(itemID: item.id, name: item.name, kind: .tops, image: clothingImage)
-        let look = try LookRepository(modelContext: store.context, mediaStore: mediaStore).createLook(
+        _ = try await LookRepository(modelContext: store.context, mediaStore: mediaStore).createLook(
             named: "Saved Look",
             avatar: avatar,
             avatarImage: avatarImage,
             composition: composition,
             wardrobeItems: [item]
         )
-        defer {
-            mediaStore.deleteOutfitMedia(lookID: look.id)
-        }
 
-        XCTAssertThrowsError(try wardrobeRepository.deleteItem(item)) { error in
+        do {
+            try await wardrobeRepository.deleteItem(item)
+            XCTFail("Expected deleteItem to throw while the item is used by a saved look")
+        } catch {
             XCTAssertEqual(
                 error.localizedDescription,
                 "This item is used in 1 saved look. Delete those looks before deleting this item."

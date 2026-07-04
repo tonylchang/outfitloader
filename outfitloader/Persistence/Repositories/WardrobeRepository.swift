@@ -29,20 +29,20 @@ struct WardrobeRepository {
         originalImage: UIImage,
         processedImage: UIImage?,
         capturedFrom source: ImageSource
-    ) throws -> WardrobeItem {
+    ) async throws -> WardrobeItem {
         let itemID = UUID()
 
         let originalDraft: ImageAssetDraft
         var processedDraft: ImageAssetDraft?
         let thumbnailDraft: ImageAssetDraft
         do {
-            originalDraft = try mediaStore.writeWardrobeOriginal(originalImage, itemID: itemID, source: source)
+            originalDraft = try await mediaStore.writeWardrobeOriginal(originalImage, itemID: itemID, source: source)
             if let processedImage {
-                processedDraft = try mediaStore.writeWardrobeProcessed(processedImage, itemID: itemID)
+                processedDraft = try await mediaStore.writeWardrobeProcessed(processedImage, itemID: itemID)
             }
-            thumbnailDraft = try mediaStore.writeThumbnail(from: processedImage ?? originalImage)
+            thumbnailDraft = try await mediaStore.writeThumbnail(from: processedImage ?? originalImage)
         } catch {
-            mediaStore.deleteWardrobeMedia(itemID: itemID)
+            await mediaStore.deleteWardrobeMedia(itemID: itemID)
             throw error
         }
 
@@ -58,8 +58,8 @@ struct WardrobeRepository {
             try modelContext.save()
         } catch {
             modelContext.rollback()
-            mediaStore.deleteWardrobeMedia(itemID: itemID)
-            mediaStore.deleteFile(relativePath: thumbnailDraft.relativePath, kind: thumbnailDraft.kind)
+            await mediaStore.deleteWardrobeMedia(itemID: itemID)
+            await mediaStore.deleteFile(relativePath: thumbnailDraft.relativePath, kind: thumbnailDraft.kind)
             throw error
         }
 
@@ -87,28 +87,29 @@ struct WardrobeRepository {
         originalImage: UIImage,
         processedImage: UIImage?,
         capturedFrom source: ImageSource
-    ) throws {
+    ) async throws {
         let oldAssets = [item.originalImage, item.processedImage, item.thumbnailImage].compactMap { $0 }
+        let oldFiles = mediaFiles(of: oldAssets)
         var newDrafts: [ImageAssetDraft] = []
 
         let originalDraft: ImageAssetDraft
         var processedDraft: ImageAssetDraft?
         let thumbnailDraft: ImageAssetDraft
         do {
-            originalDraft = try mediaStore.writeWardrobeReplacementOriginal(originalImage, itemID: item.id, source: source)
+            originalDraft = try await mediaStore.writeWardrobeReplacementOriginal(originalImage, itemID: item.id, source: source)
             newDrafts.append(originalDraft)
 
             if let processedImage {
-                processedDraft = try mediaStore.writeWardrobeReplacementProcessed(processedImage, itemID: item.id)
+                processedDraft = try await mediaStore.writeWardrobeReplacementProcessed(processedImage, itemID: item.id)
                 if let processedDraft {
                     newDrafts.append(processedDraft)
                 }
             }
 
-            thumbnailDraft = try mediaStore.writeThumbnail(from: processedImage ?? originalImage)
+            thumbnailDraft = try await mediaStore.writeThumbnail(from: processedImage ?? originalImage)
             newDrafts.append(thumbnailDraft)
         } catch {
-            deleteDrafts(newDrafts)
+            await deleteDrafts(newDrafts)
             throw error
         }
 
@@ -125,33 +126,46 @@ struct WardrobeRepository {
             try modelContext.save()
         } catch {
             modelContext.rollback()
-            deleteDrafts(newDrafts)
+            await deleteDrafts(newDrafts)
             throw error
         }
 
-        for asset in oldAssets {
-            mediaStore.deleteMedia(for: asset)
-        }
+        await deleteFiles(oldFiles)
     }
 
-    func deleteItem(_ item: WardrobeItem) throws {
+    func deleteItem(_ item: WardrobeItem) async throws {
         let usageCount = try savedLookUsageCount(for: item)
         guard usageCount == 0 else {
             throw WardrobeRepositoryError.itemUsedInLooks(count: usageCount)
         }
 
-        let assets = [item.originalImage, item.processedImage, item.thumbnailImage]
-        for asset in assets.compactMap({ $0 }) {
-            mediaStore.deleteMedia(for: asset)
-        }
-        mediaStore.deleteWardrobeMedia(itemID: item.id)
+        let files = mediaFiles(of: [item.originalImage, item.processedImage, item.thumbnailImage].compactMap { $0 })
+        let itemID = item.id
         modelContext.delete(item)
         try modelContext.save()
+
+        await deleteFiles(files)
+        await mediaStore.deleteWardrobeMedia(itemID: itemID)
     }
 
-    private func deleteDrafts(_ drafts: [ImageAssetDraft]) {
+    /// File locations are captured while the models are alive and rows are
+    /// deleted before files, so a failed save never leaves rows pointing at
+    /// missing media. SwiftData models never cross into the actor.
+    private func mediaFiles(of assets: [ImageAsset]) -> [(relativePath: String, kind: ImageAssetKind)] {
+        assets.compactMap { asset in
+            asset.kind.map { (relativePath: asset.relativePath, kind: $0) }
+        }
+    }
+
+    private func deleteFiles(_ files: [(relativePath: String, kind: ImageAssetKind)]) async {
+        for file in files {
+            await mediaStore.deleteFile(relativePath: file.relativePath, kind: file.kind)
+        }
+    }
+
+    private func deleteDrafts(_ drafts: [ImageAssetDraft]) async {
         for draft in drafts {
-            mediaStore.deleteFile(relativePath: draft.relativePath, kind: draft.kind)
+            await mediaStore.deleteFile(relativePath: draft.relativePath, kind: draft.kind)
         }
     }
 }

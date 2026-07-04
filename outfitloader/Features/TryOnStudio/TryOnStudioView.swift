@@ -80,7 +80,7 @@ struct TryOnStudioView: View {
             }
             .sheet(isPresented: $showingSaveSheet) {
                 SaveLookSheet(defaultName: defaultLookName) { name in
-                    try saveLook(named: name)
+                    try await saveLook(named: name)
                 }
             }
         }
@@ -137,17 +137,17 @@ struct TryOnStudioView: View {
             return
         }
 
-        let store = mediaStore
-        let relativePath = asset.relativePath
-        let kindRawValue = asset.kindRawValue
         let adjustment = avatar.bodyShapeAdjustment
+        guard let source = await mediaStore.loadImage(
+            relativePath: asset.relativePath,
+            kindRawValue: asset.kindRawValue
+        ) else {
+            avatarImage = nil
+            return
+        }
 
         avatarImage = await Task.detached(priority: .userInitiated) {
-            guard let source = store.loadImage(relativePath: relativePath, kindRawValue: kindRawValue) else {
-                return nil
-            }
-
-            return AvatarBodyShapeRenderer().render(source, adjustment: adjustment)
+            AvatarBodyShapeRenderer().render(source, adjustment: adjustment)
         }.value
     }
 
@@ -162,7 +162,6 @@ struct TryOnStudioView: View {
             return
         }
 
-        let store = mediaStore
         let relativePath = asset.relativePath
         let kindRawValue = asset.kindRawValue
         let itemID = item.id
@@ -170,9 +169,10 @@ struct TryOnStudioView: View {
         let kind = item.categoryKind ?? .tops
 
         Task {
-            guard let image = await Task.detached(priority: .userInitiated, operation: {
-                store.loadImage(relativePath: relativePath, kindRawValue: kindRawValue)
-            }).value else {
+            guard let image = await mediaStore.loadImage(
+                relativePath: relativePath,
+                kindRawValue: kindRawValue
+            ) else {
                 return
             }
 
@@ -180,13 +180,13 @@ struct TryOnStudioView: View {
         }
     }
 
-    private func saveLook(named name: String) throws {
+    private func saveLook(named name: String) async throws {
         guard let avatar = activeAvatar, let avatarImage else {
             throw LookRepositoryError.missingAvatar
         }
 
         let repository = LookRepository(modelContext: modelContext, mediaStore: mediaStore)
-        try repository.createLook(
+        try await repository.createLook(
             named: name,
             avatar: avatar,
             avatarImage: avatarImage,
@@ -198,13 +198,14 @@ struct TryOnStudioView: View {
 
 private struct SaveLookSheet: View {
     let defaultName: String
-    let onSave: (String) throws -> Void
+    let onSave: (String) async throws -> Void
 
     @Environment(\.dismiss) private var dismiss
     @State private var name: String
     @State private var errorMessage: String?
+    @State private var isSaving = false
 
-    init(defaultName: String, onSave: @escaping (String) throws -> Void) {
+    init(defaultName: String, onSave: @escaping (String) async throws -> Void) {
         self.defaultName = defaultName
         self.onSave = onSave
         _name = State(initialValue: defaultName)
@@ -231,7 +232,7 @@ private struct SaveLookSheet: View {
                     Button("Save") {
                         save()
                     }
-                    .disabled(name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                    .disabled(name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || isSaving)
                 }
             }
             .alert(
@@ -249,11 +250,16 @@ private struct SaveLookSheet: View {
     }
 
     private func save() {
-        do {
-            try onSave(name)
-            dismiss()
-        } catch {
-            errorMessage = error.localizedDescription
+        isSaving = true
+        Task {
+            do {
+                try await onSave(name)
+                dismiss()
+            } catch {
+                errorMessage = error.localizedDescription
+            }
+
+            isSaving = false
         }
     }
 }

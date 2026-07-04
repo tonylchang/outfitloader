@@ -37,11 +37,9 @@ struct MediaImageView: View {
             return
         }
 
-        let store = mediaStore
-        let relativePath = asset.relativePath
-        let kindRawValue = asset.kindRawValue
-        loadedImage = await Task.detached(priority: .userInitiated) {
-            store.loadImage(relativePath: relativePath, kindRawValue: kindRawValue)
-        }.value
+        loadedImage = await mediaStore.loadImage(
+            relativePath: asset.relativePath,
+            kindRawValue: asset.kindRawValue
+        )
     }
 }

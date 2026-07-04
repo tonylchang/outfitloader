@@ -73,16 +73,16 @@ struct SettingsView: View {
 
     private func deleteAllLocalData() {
         isDeleting = true
-        defer {
-            isDeleting = false
-        }
+        Task {
+            do {
+                let repository = LocalDataRepository(modelContext: modelContext, mediaStore: mediaStore)
+                try await repository.deleteAllUserData()
+                dismiss()
+            } catch {
+                errorMessage = error.localizedDescription
+            }
 
-        do {
-            let repository = LocalDataRepository(modelContext: modelContext, mediaStore: mediaStore)
-            try repository.deleteAllUserData()
-            dismiss()
-        } catch {
-            errorMessage = error.localizedDescription
+            isDeleting = false
         }
     }
 }

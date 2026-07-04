@@ -155,7 +155,7 @@ struct ReplaceWardrobePhotoSheet: View {
         Task { @MainActor in
             do {
                 let wardrobeRepository = WardrobeRepository(modelContext: modelContext, mediaStore: mediaStore)
-                try wardrobeRepository.replaceItemPhoto(
+                try await wardrobeRepository.replaceItemPhoto(
                     item,
                     originalImage: originalImage,
                     processedImage: photoSelection.processedImageForSave,

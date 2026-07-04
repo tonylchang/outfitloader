@@ -91,10 +91,7 @@ struct TryOnStudioView: View {
     }
 
     private var defaultLookName: String {
-        let formatter = DateFormatter()
-        formatter.dateStyle = .medium
-        formatter.timeStyle = .none
-        return "Look \(formatter.string(from: .now))"
+        "Look \(Date.now.formatted(date: .abbreviated, time: .omitted))"
     }
 
     private var shelf: some View {

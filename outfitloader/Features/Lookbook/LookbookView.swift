@@ -115,7 +115,6 @@ private struct LookbookDetailView: View {
         .navigationBarTitleDisplayMode(.inline)
         .onChange(of: look.name) {
             look.updatedAt = .now
-            try? modelContext.save()
         }
         .confirmationDialog(
             "Delete \(look.name)?",

@@ -1,8 +1,8 @@
 # Changelog
 
-## 0.1.0 - Unreleased
+## 0.1.0 - 2026-07-03
 
-Milestone 1 TestFlight-able MVP work.
+Milestone 1: the TestFlight-able MVP. First build uploaded to TestFlight.
 
 ### Added
 
@@ -36,4 +36,4 @@ Milestone 1 TestFlight-able MVP work.
 - No backend, sync, product analytics, or third-party AI services are included.
 - User data participates in standard user-controlled encrypted device backups; the privacy policy states this explicitly.
 - The full physical-device TestFlight readiness checklist has been completed.
-- Archive and manual upload remain before external TestFlight.
+- Build 1 was archived and uploaded to App Store Connect / TestFlight on 2026-07-03.

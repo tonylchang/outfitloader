@@ -31,9 +31,20 @@ struct MediaImageView: View {
                     .foregroundStyle(.tertiary)
             }
         }
-        .task(id: (asset ?? fallback)?.relativePath) {
+        .task(id: reloadKey) {
             await loadImage()
         }
+    }
+
+    /// Reload when the path changes or when the file is rewritten in place:
+    /// look-preview refreshes reuse `Outfits/<id>/preview.jpg` and bump the
+    /// row's `updatedAt`, so the path alone would never retrigger the task.
+    private var reloadKey: String {
+        guard let active = asset ?? fallback else {
+            return "none"
+        }
+
+        return "\(active.relativePath)|\(active.updatedAt.timeIntervalSinceReferenceDate)"
     }
 
     private func loadImage() async {

@@ -1,19 +1,18 @@
 # Changelog
 
-## Unreleased
+## 0.2.0 - 2026-07-04
+
+Hardening and code-quality pass: latent bug fixes (thumbnail cache recovery, stale previews, capture feedback), schema cleanup with a device-verified migration from 0.1.0, expanded test coverage, and CI.
 
 ### Added
 
+- GitHub Actions CI: the unit test suite builds and runs on an iOS simulator for every push to `main` and every pull request, using only the Apple toolchain.
 - Layered Liquid Glass app icon (`AppIcon.icon`) with the brand gradient fill and vector ring, alongside the flat icon fallbacks.
 - Debug-only orphan media scan at launch that reports SwiftData rows with missing files and unreferenced files on disk, as counts only.
 - Empty states now lead to the action that fills them: Lookbook links to Try On, the Try On shelf links to the Closet, and a filtered-empty Closet offers Add Item and Show All.
 - VoiceOver custom actions on the try-on canvas: move a placed item up/down/left/right in 5% steps, remove it, and hear its position; the avatar and layers now expose button and selected-state traits.
 - Test coverage for MediaStore file IO, TryOnComposer rendering (including opacity blending and z-order), WardrobeRepository create/replace/delete transactions, and the clothing-extraction fallback contract.
 - Test coverage for try-on canvas state (placement, category replacement, selection, reset), AvatarRepository transactions, the delete-all-data contract, and preview refreshes; look tests now run on Swift Testing and match typed error cases instead of display strings.
-
-### Added (infrastructure)
-
-- GitHub Actions CI: the unit test suite builds and runs on an iOS simulator for every push to `main` and every pull request, using only the Apple toolchain.
 
 ### Changed
 

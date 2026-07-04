@@ -41,7 +41,8 @@ struct AppRootView: View {
                 Orphan scan found problems: rows with missing files \
                 \(String(describing: report.missingFilesByKind), privacy: .public), \
                 unreferenced durable files \(report.orphanedDurableFileCount), \
-                unreferenced cached files \(report.orphanedCachedFileCount)
+                unreferenced cached files \(report.orphanedCachedFileCount), \
+                original-file hash mismatches \(report.hashMismatchCount)
                 """)
             } else {
                 logger.debug("Orphan scan clean")

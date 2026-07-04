@@ -77,15 +77,13 @@ struct LookRepository {
             throw error
         }
 
-        let sortIndex = (try? modelContext.fetchCount(FetchDescriptor<OutfitLook>())) ?? 0
         let avatarAdjustment = composition.avatarAdjustment
         let look = OutfitLook(
             id: lookID,
             name: name.isEmpty ? "Untitled Look" : name,
             avatarScale: Double(avatarAdjustment.scale),
             avatarRotationDegrees: Double(avatarAdjustment.rotationRadians * 180 / .pi),
-            avatarOpacity: Double(avatarAdjustment.opacity),
-            sortIndex: sortIndex
+            avatarOpacity: Double(avatarAdjustment.opacity)
         )
         look.avatarProfile = avatar
         look.previewImage = ImageAsset(draft: previewDraft)

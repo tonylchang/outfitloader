@@ -45,8 +45,7 @@ struct WardrobeRepository {
             throw error
         }
 
-        let sortIndex = (try? modelContext.fetchCount(FetchDescriptor<WardrobeItem>())) ?? 0
-        let item = WardrobeItem(id: itemID, name: name, kind: kind, sortIndex: sortIndex)
+        let item = WardrobeItem(id: itemID, name: name, kind: kind)
         item.originalImage = ImageAsset(draft: originalDraft)
         item.processedImage = processedDraft.map { ImageAsset(draft: $0) }
         item.thumbnailImage = ImageAsset(draft: thumbnailDraft)

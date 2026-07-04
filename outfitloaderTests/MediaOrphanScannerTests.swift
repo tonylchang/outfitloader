@@ -70,4 +70,41 @@ final class MediaOrphanScannerTests {
         #expect(report.orphanedCachedFileCount == 1)
         #expect(report.missingFilesByKind.isEmpty)
     }
+
+    @Test func corruptedOriginalIsReportedAsHashMismatch() async throws {
+        let image = TestImageFactory.makeImage(size: CGSize(width: 20, height: 20), color: .systemBlue)
+        let draft = try await mediaStore.writeWardrobeOriginal(image, itemID: UUID(), source: .camera)
+        context.insert(ImageAsset(draft: draft))
+        try context.save()
+
+        // Corrupt the file's bytes behind the store's back.
+        let fileURL = cleanupRoot
+            .appending(path: "Media", directoryHint: .isDirectory)
+            .appending(path: draft.relativePath)
+        try Data("not the original bytes".utf8).write(to: fileURL)
+
+        let report = try await scanner.scan()
+
+        #expect(report.hashMismatchCount == 1)
+        #expect(report.missingFilesByKind.isEmpty)
+        #expect(report.hasFindings)
+    }
+
+    @Test func rewrittenRegenerableThumbnailIsNotAHashMismatch() async throws {
+        let image = TestImageFactory.makeImage(size: CGSize(width: 20, height: 20), color: .systemGreen)
+        let draft = try await mediaStore.writeThumbnail(from: image)
+        context.insert(ImageAsset(draft: draft))
+        try context.save()
+
+        // A cache refill legitimately rewrites the file with different bytes.
+        let fileURL = cleanupRoot
+            .appending(path: "Caches", directoryHint: .isDirectory)
+            .appending(path: draft.relativePath)
+        try Data("regenerated with different bytes".utf8).write(to: fileURL)
+
+        let report = try await scanner.scan()
+
+        #expect(report.hashMismatchCount == 0)
+        #expect(!report.hasFindings)
+    }
 }

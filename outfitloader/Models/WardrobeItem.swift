@@ -15,7 +15,6 @@ final class WardrobeItem {
     @Relationship(deleteRule: .cascade) var thumbnailImage: ImageAsset?
     var dominantColorName: String?
     var notes: String?
-    var sortIndex: Int
     var isArchived: Bool
 
     var categoryKind: CategoryKind? {
@@ -36,7 +35,6 @@ final class WardrobeItem {
         kind: CategoryKind,
         dominantColorName: String? = nil,
         notes: String? = nil,
-        sortIndex: Int = 0,
         isArchived: Bool = false
     ) {
         self.id = id
@@ -46,7 +44,6 @@ final class WardrobeItem {
         self.categoryKindRawValue = kind.rawValue
         self.dominantColorName = dominantColorName
         self.notes = notes
-        self.sortIndex = sortIndex
         self.isArchived = isArchived
     }
 }

@@ -33,7 +33,10 @@ struct TryOnComposer {
         format.opaque = false
 
         return UIGraphicsImageRenderer(size: outputSize, format: format).image { renderContext in
-            UIColor.systemBackground.setFill()
+            // Previews are stored JPEGs, so a dynamic color would bake in
+            // whichever appearance was active at save time and the lookbook
+            // grid would mix light and dark cards. Always render on white.
+            UIColor.white.setFill()
             renderContext.fill(CGRect(origin: .zero, size: outputSize))
 
             let canvas = CGRect(origin: .zero, size: outputSize).insetBy(dx: 48, dy: 48)

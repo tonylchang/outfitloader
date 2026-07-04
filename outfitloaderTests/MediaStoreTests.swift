@@ -27,15 +27,19 @@ final class MediaStoreTests {
 
     // MARK: - Writing
 
+    /// Imports store as HEIC where the platform supports encoding it, JPEG elsewhere.
+    private var expectedImportExtension: String { MediaStore.isHEICEncodingAvailable ? "heic" : "jpg" }
+    private var expectedImportContentType: String { MediaStore.isHEICEncodingAvailable ? "image/heic" : "image/jpeg" }
+
     @Test func avatarOriginalWriteProducesFileAndAccurateDraft() async throws {
         let image = TestImageFactory.makeImage(size: CGSize(width: 120, height: 240), color: .systemIndigo)
         let avatarID = UUID()
 
         let draft = try await store.writeAvatarOriginal(image, avatarID: avatarID, source: .camera)
 
-        #expect(draft.relativePath == "Avatars/\(avatarID.uuidString)/original.jpg")
+        #expect(draft.relativePath == "Avatars/\(avatarID.uuidString)/original.\(expectedImportExtension)")
         #expect(draft.kind == .avatarOriginal)
-        #expect(draft.contentType == "image/jpeg")
+        #expect(draft.contentType == expectedImportContentType)
         #expect(draft.source == .camera)
         #expect(draft.isRegenerable == false)
         #expect(draft.pixelWidth == 120)
@@ -75,6 +79,21 @@ final class MediaStoreTests {
         let fileURL = cachesRoot.appending(path: draft.relativePath)
         #expect(FileManager.default.fileExists(atPath: fileURL.path))
         #expect(!FileManager.default.fileExists(atPath: mediaRoot.appending(path: draft.relativePath).path))
+    }
+
+    @Test func importedOriginalsUseHEICWhenEncodingIsAvailable() async throws {
+        let image = TestImageFactory.makeImage(size: CGSize(width: 80, height: 80), color: .systemBrown)
+
+        let draft = try await store.writeWardrobeOriginal(image, itemID: UUID(), source: .photoLibrary)
+
+        #expect(draft.relativePath.hasSuffix(".\(expectedImportExtension)"))
+        #expect(draft.contentType == expectedImportContentType)
+
+        // Generated derivatives keep their fixed formats regardless.
+        let thumbnail = try await store.writeThumbnail(from: image)
+        #expect(thumbnail.contentType == "image/jpeg")
+        let preview = try await store.writeOutfitPreview(image, lookID: UUID())
+        #expect(preview.contentType == "image/jpeg")
     }
 
     @Test func replacementWritesUseUniquePaths() async throws {

@@ -1,7 +1,9 @@
 import CryptoKit
 import Foundation
+import ImageIO
 import SwiftUI
 import UIKit
+import UniformTypeIdentifiers
 
 /// Metadata for an image file that has been written to disk but not yet
 /// inserted into SwiftData. Files are always written before rows exist.
@@ -60,6 +62,18 @@ enum MediaStoreError: LocalizedError {
 actor MediaStore {
     static let shared = MediaStore()
 
+    /// Whether this platform can encode HEIC. Imported originals prefer HEIC
+    /// for its smaller footprint and fall back to JPEG when it is unavailable.
+    /// The simulator advertises HEIC support but its HEVC encoder can hang in
+    /// CGImageDestinationFinalize, so it is force-disabled there.
+    static let isHEICEncodingAvailable: Bool = {
+        #if targetEnvironment(simulator)
+        return false
+        #else
+        return (CGImageDestinationCopyTypeIdentifiers() as? [String] ?? []).contains(UTType.heic.identifier)
+        #endif
+    }()
+
     private static let thumbnailMaxPixelSize: CGFloat = 600
 
     /// Overrides for the standard container roots so tests can isolate IO in
@@ -75,7 +89,7 @@ actor MediaStore {
     // MARK: - Writing
 
     func writeAvatarOriginal(_ image: UIImage, avatarID: UUID, source: ImageSource) throws -> ImageAssetDraft {
-        try writeJPEG(image, relativePath: "Avatars/\(avatarID.uuidString)/original.jpg", kind: .avatarOriginal, source: source)
+        try writeImport(image, relativeBase: "Avatars/\(avatarID.uuidString)/original", kind: .avatarOriginal, source: source)
     }
 
     func writeAvatarSilhouette(_ image: UIImage, avatarID: UUID) throws -> ImageAssetDraft {
@@ -83,14 +97,14 @@ actor MediaStore {
     }
 
     func writeWardrobeOriginal(_ image: UIImage, itemID: UUID, source: ImageSource) throws -> ImageAssetDraft {
-        try writeJPEG(image, relativePath: "Wardrobe/\(itemID.uuidString)/original.jpg", kind: .wardrobeOriginal, source: source)
+        try writeImport(image, relativeBase: "Wardrobe/\(itemID.uuidString)/original", kind: .wardrobeOriginal, source: source)
     }
 
     func writeWardrobeReplacementOriginal(_ image: UIImage, itemID: UUID, source: ImageSource) throws -> ImageAssetDraft {
         let assetID = UUID()
-        return try writeJPEG(
+        return try writeImport(
             image,
-            relativePath: "Wardrobe/\(itemID.uuidString)/Originals/\(assetID.uuidString).jpg",
+            relativeBase: "Wardrobe/\(itemID.uuidString)/Originals/\(assetID.uuidString)",
             kind: .wardrobeOriginal,
             source: source,
             assetID: assetID
@@ -140,6 +154,53 @@ actor MediaStore {
         return UIImage(contentsOfFile: url.path)
     }
 
+    // MARK: - Integrity
+
+    func fileExists(relativePath: String, kind: ImageAssetKind) -> Bool {
+        guard let url = try? fileURL(relativePath: relativePath, kind: kind) else {
+            return false
+        }
+
+        return FileManager.default.fileExists(atPath: url.path)
+    }
+
+    /// Relative paths of every file under both roots, for the debug orphan scan.
+    func listAllRelativePaths() -> (durable: Set<String>, cached: Set<String>) {
+        (
+            durable: relativePaths(under: try? mediaRoot()),
+            cached: relativePaths(under: try? cachesRoot())
+        )
+    }
+
+    private func relativePaths(under root: URL?) -> Set<String> {
+        guard let root else {
+            return []
+        }
+
+        let resolvedRoot = root.resolvingSymlinksInPath().path
+        guard let enumerator = FileManager.default.enumerator(
+            at: root,
+            includingPropertiesForKeys: [.isRegularFileKey],
+            options: [.skipsHiddenFiles]
+        ) else {
+            return []
+        }
+
+        var paths: Set<String> = []
+        for case let url as URL in enumerator {
+            guard (try? url.resourceValues(forKeys: [.isRegularFileKey]))?.isRegularFile == true else {
+                continue
+            }
+
+            let resolved = url.resolvingSymlinksInPath().path
+            if resolved.hasPrefix(resolvedRoot + "/") {
+                paths.insert(String(resolved.dropFirst(resolvedRoot.count + 1)))
+            }
+        }
+
+        return paths
+    }
+
     // MARK: - Deleting
 
     func deleteFile(relativePath: String, kind: ImageAssetKind) {
@@ -173,6 +234,66 @@ actor MediaStore {
     }
 
     // MARK: - Encoding
+
+    /// Writes a user-imported original: HEIC when the platform can encode it,
+    /// otherwise JPEG. Generated derivatives keep their fixed formats.
+    private func writeImport(
+        _ image: UIImage,
+        relativeBase: String,
+        kind: ImageAssetKind,
+        source: ImageSource,
+        assetID: UUID = UUID()
+    ) throws -> ImageAssetDraft {
+        let normalized = image.normalizedForProcessing()
+
+        if let heic = heicData(from: normalized, quality: 0.9) {
+            return try write(
+                data: heic,
+                image: normalized,
+                relativePath: relativeBase + ".heic",
+                kind: kind,
+                source: source,
+                contentType: "image/heic",
+                assetID: assetID
+            )
+        }
+
+        guard let jpeg = normalized.jpegData(compressionQuality: 0.9) else {
+            throw MediaStoreError.encodingFailed
+        }
+
+        return try write(
+            data: jpeg,
+            image: normalized,
+            relativePath: relativeBase + ".jpg",
+            kind: kind,
+            source: source,
+            contentType: "image/jpeg",
+            assetID: assetID
+        )
+    }
+
+    private func heicData(from image: UIImage, quality: CGFloat) -> Data? {
+        guard Self.isHEICEncodingAvailable, let cgImage = image.cgImage else {
+            return nil
+        }
+
+        let data = NSMutableData()
+        guard let destination = CGImageDestinationCreateWithData(data, UTType.heic.identifier as CFString, 1, nil) else {
+            return nil
+        }
+
+        CGImageDestinationAddImage(
+            destination,
+            cgImage,
+            [kCGImageDestinationLossyCompressionQuality: quality] as CFDictionary
+        )
+        guard CGImageDestinationFinalize(destination) else {
+            return nil
+        }
+
+        return data as Data
+    }
 
     private func writeJPEG(
         _ image: UIImage,

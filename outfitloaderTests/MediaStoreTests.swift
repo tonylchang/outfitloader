@@ -126,6 +126,43 @@ final class MediaStoreTests {
         #expect(loaded.cgImage?.height == 40)
     }
 
+    // MARK: - Regeneration
+
+    @Test func purgedThumbnailRegeneratesInPlaceFromDurableOriginal() async throws {
+        let image = TestImageFactory.makeImage(size: CGSize(width: 1600, height: 800), color: .systemMint)
+        let original = try await store.writeWardrobeOriginal(image, itemID: UUID(), source: .camera)
+        let thumbnail = try await store.writeThumbnail(from: image)
+
+        // Simulate the system purging the Caches directory.
+        try FileManager.default.removeItem(at: cachesRoot.appending(path: thumbnail.relativePath))
+
+        let regenerated = try #require(await store.regenerateThumbnail(
+            relativePath: thumbnail.relativePath,
+            fromSourcePath: original.relativePath,
+            sourceKindRawValue: original.kind.rawValue
+        ))
+
+        #expect(max(regenerated.size.width, regenerated.size.height) <= 600)
+
+        // The file must return to the row's recorded path so the ImageAsset
+        // row stays valid without any SwiftData mutation.
+        let reloaded = try #require(await store.loadImage(
+            relativePath: thumbnail.relativePath,
+            kindRawValue: ImageAssetKind.wardrobeThumbnail.rawValue
+        ))
+        #expect(max(reloaded.size.width, reloaded.size.height) <= 600)
+    }
+
+    @Test func thumbnailRegenerationReturnsNilWhenTheSourceIsAlsoMissing() async {
+        let regenerated = await store.regenerateThumbnail(
+            relativePath: "Thumbnails/\(UUID().uuidString).jpg",
+            fromSourcePath: "Wardrobe/nope/original.jpg",
+            sourceKindRawValue: ImageAssetKind.wardrobeOriginal.rawValue
+        )
+
+        #expect(regenerated == nil)
+    }
+
     // MARK: - Reading
 
     @Test func loadImageRoundTripsWrittenMedia() async throws {

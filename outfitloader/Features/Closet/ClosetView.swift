@@ -103,7 +103,8 @@ private struct WardrobeItemCell: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
             MediaImageView(
-                asset: item.thumbnailImage ?? item.displayImage,
+                asset: item.thumbnailImage,
+                fallback: item.displayImage,
                 placeholderSymbol: "tshirt"
             )
             .frame(maxWidth: .infinity)

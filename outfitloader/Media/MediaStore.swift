@@ -154,6 +154,33 @@ actor MediaStore {
         return UIImage(contentsOfFile: url.path)
     }
 
+    /// Rebuilds a cache-stored thumbnail whose file the system purged, writing
+    /// it back to the row's recorded path so the ImageAsset row stays valid.
+    /// The row's byte count and hash still describe the original write; that
+    /// drift is acceptable for regenerable cache artifacts. Returns the
+    /// thumbnail even if the rewrite fails, so display recovers regardless.
+    func regenerateThumbnail(
+        relativePath: String,
+        fromSourcePath sourcePath: String,
+        sourceKindRawValue: String
+    ) -> UIImage? {
+        guard let source = loadImage(relativePath: sourcePath, kindRawValue: sourceKindRawValue) else {
+            return nil
+        }
+
+        let thumbnail = source.resizedToFit(maxPixelSize: Self.thumbnailMaxPixelSize)
+        if let data = thumbnail.jpegData(compressionQuality: 0.9),
+           let url = try? fileURL(relativePath: relativePath, kind: .wardrobeThumbnail) {
+            try? FileManager.default.createDirectory(
+                at: url.deletingLastPathComponent(),
+                withIntermediateDirectories: true
+            )
+            try? data.write(to: url, options: [.atomic, .completeFileProtection])
+        }
+
+        return thumbnail
+    }
+
     // MARK: - Integrity
 
     func fileExists(relativePath: String, kind: ImageAssetKind) -> Bool {

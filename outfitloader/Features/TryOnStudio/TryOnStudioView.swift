@@ -283,7 +283,8 @@ private struct ShelfItemButton: View {
         Button(action: action) {
             VStack(spacing: 3) {
                 MediaImageView(
-                    asset: item.thumbnailImage ?? item.displayImage,
+                    asset: item.thumbnailImage,
+                    fallback: item.displayImage,
                     placeholderSymbol: "tshirt"
                 )
                 .frame(width: 60, height: 60)

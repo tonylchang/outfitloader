@@ -163,7 +163,7 @@ private struct LookSlotRow: View {
 
     var body: some View {
         HStack(spacing: 12) {
-            MediaImageView(asset: item?.thumbnailImage ?? item?.displayImage, placeholderSymbol: slot.categoryKind?.symbolName ?? "tshirt")
+            MediaImageView(asset: item?.thumbnailImage, fallback: item?.displayImage, placeholderSymbol: slot.categoryKind?.symbolName ?? "tshirt")
                 .frame(width: 52, height: 52)
                 .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
 

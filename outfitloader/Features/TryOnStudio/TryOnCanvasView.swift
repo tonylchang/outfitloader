@@ -30,6 +30,9 @@ struct TryOnCanvasView: View {
                         .opacity(composition.avatarAdjustment.opacity)
                         .rotationEffect(.radians(composition.avatarAdjustment.rotationRadians))
                         .position(x: avatarRect.midX, y: avatarRect.midY)
+                        .accessibilityLabel("Avatar")
+                        .accessibilityHint("Selects the avatar for scale, rotation, and opacity adjustments.")
+                        .accessibilityAddTraits(composition.selection == .avatar ? [.isButton, .isSelected] : .isButton)
                         .onTapGesture {
                             composition.selection = .avatar
                         }
@@ -79,6 +82,16 @@ struct TryOnCanvasView: View {
             .rotationEffect(.radians(layer.placement.rotationRadians))
             .position(center)
             .accessibilityLabel("\(layer.itemName), \(layer.categoryKind.displayName)")
+            .accessibilityValue(placementDescription(layer.placement))
+            .accessibilityHint("Selects this item for adjustments. Use custom actions to move or remove it.")
+            .accessibilityAddTraits(isSelected ? [.isButton, .isSelected] : .isButton)
+            .accessibilityAction(named: "Move up") { nudge(layer, dx: 0, dy: -1) }
+            .accessibilityAction(named: "Move down") { nudge(layer, dx: 0, dy: 1) }
+            .accessibilityAction(named: "Move left") { nudge(layer, dx: -1, dy: 0) }
+            .accessibilityAction(named: "Move right") { nudge(layer, dx: 1, dy: 0) }
+            .accessibilityAction(named: "Remove from outfit") {
+                composition.removeLayer(id: layer.id)
+            }
             .onTapGesture {
                 composition.selection = .layer(layer.id)
             }
@@ -98,6 +111,27 @@ struct TryOnCanvasView: View {
                         }
                     }
             )
+    }
+
+    /// VoiceOver alternative to drag positioning: shift the layer anchor by a
+    /// fixed step in normalized avatar coordinates.
+    private func nudge(_ layer: TryOnLayer, dx: CGFloat, dy: CGFloat) {
+        let step: CGFloat = 0.05
+        composition.selection = .layer(layer.id)
+        composition.updatePlacement(layerID: layer.id) { placement in
+            placement.anchor = CGPoint(
+                x: (placement.anchor.x + dx * step).clamped(to: 0...1),
+                y: (placement.anchor.y + dy * step).clamped(to: 0...1)
+            )
+        }
+    }
+
+    private func placementDescription(_ placement: ClothingPlacement) -> String {
+        let horizontal = ["left", "center", "right"][Int((placement.anchor.x * 2).rounded())]
+        let vertical = ["top", "middle", "bottom"][Int((placement.anchor.y * 2).rounded())]
+        return vertical == "middle" && horizontal == "center"
+            ? "centered on the avatar"
+            : "at the \(vertical) \(horizontal) of the avatar"
     }
 }
 

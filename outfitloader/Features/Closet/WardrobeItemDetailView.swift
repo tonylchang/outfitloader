@@ -94,17 +94,7 @@ struct WardrobeItemDetailView: View {
                 Text("The item and its photos will be removed from this device.")
             }
         }
-        .alert(
-            "Couldn't Delete Item",
-            isPresented: Binding(
-                get: { errorMessage != nil },
-                set: { if !$0 { errorMessage = nil } }
-            )
-        ) {
-            Button("OK", role: .cancel) {}
-        } message: {
-            Text(errorMessage ?? "")
-        }
+        .errorAlert("Couldn't Delete Item", message: $errorMessage)
     }
 
     private var kindBinding: Binding<CategoryKind> {

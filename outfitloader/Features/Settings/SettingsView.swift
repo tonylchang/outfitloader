@@ -58,17 +58,7 @@ struct SettingsView: View {
         } message: {
             Text("This cannot be undone. You will return to avatar setup after deletion.")
         }
-        .alert(
-            "Couldn't Delete Local Data",
-            isPresented: Binding(
-                get: { errorMessage != nil },
-                set: { if !$0 { errorMessage = nil } }
-            )
-        ) {
-            Button("OK", role: .cancel) {}
-        } message: {
-            Text(errorMessage ?? "")
-        }
+        .errorAlert("Couldn't Delete Local Data", message: $errorMessage)
     }
 
     private func deleteAllLocalData() {

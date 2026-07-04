@@ -62,17 +62,7 @@ struct ReplaceWardrobePhotoSheet: View {
                     await photoSelection.loadPickedImage(newItem)
                 }
             }
-            .alert(
-                "Couldn't Replace Photo",
-                isPresented: Binding(
-                    get: { photoSelection.errorMessage != nil },
-                    set: { if !$0 { photoSelection.errorMessage = nil } }
-                )
-            ) {
-                Button("OK", role: .cancel) {}
-            } message: {
-                Text(photoSelection.errorMessage ?? "")
-            }
+            .errorAlert("Couldn't Replace Photo", message: $photoSelection.errorMessage)
         }
     }
 

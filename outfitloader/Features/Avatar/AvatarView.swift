@@ -87,17 +87,7 @@ struct AvatarView: View {
         } message: {
             Text("The current avatar photo and silhouette will be deleted from this device.")
         }
-        .alert(
-            "Couldn't Delete Avatar",
-            isPresented: Binding(
-                get: { errorMessage != nil },
-                set: { if !$0 { errorMessage = nil } }
-            )
-        ) {
-            Button("OK", role: .cancel) {}
-        } message: {
-            Text(errorMessage ?? "")
-        }
+        .errorAlert("Couldn't Delete Avatar", message: $errorMessage)
     }
 
     private func bodyShapeSection(for avatar: AvatarProfile) -> some View {

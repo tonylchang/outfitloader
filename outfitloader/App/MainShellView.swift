@@ -38,17 +38,7 @@ struct MainShellView: View {
             }
         }
         .tabViewStyle(.sidebarAdaptable)
-        .alert(
-            "Couldn't Reopen Look",
-            isPresented: Binding(
-                get: { reopenErrorMessage != nil },
-                set: { if !$0 { reopenErrorMessage = nil } }
-            )
-        ) {
-            Button("OK", role: .cancel) {}
-        } message: {
-            Text(reopenErrorMessage ?? "")
-        }
+        .errorAlert("Couldn't Reopen Look", message: $reopenErrorMessage)
     }
 
     private func reopenLook(_ look: OutfitLook) {

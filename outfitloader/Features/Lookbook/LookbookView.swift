@@ -128,17 +128,7 @@ private struct LookbookDetailView: View {
         } message: {
             Text("The saved look and its preview will be removed from this device. Closet items will stay in your closet.")
         }
-        .alert(
-            "Couldn't Delete Look",
-            isPresented: Binding(
-                get: { errorMessage != nil },
-                set: { if !$0 { errorMessage = nil } }
-            )
-        ) {
-            Button("OK", role: .cancel) {}
-        } message: {
-            Text(errorMessage ?? "")
-        }
+        .errorAlert("Couldn't Delete Look", message: $errorMessage)
     }
 
     private func deleteLook() {

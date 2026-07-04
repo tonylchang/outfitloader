@@ -54,7 +54,7 @@ final class CameraCaptureViewController: UIViewController, AVCapturePhotoCapture
     private let sessionQueue = DispatchQueue(label: "com.outfitloader.camera-session")
     private lazy var previewLayer = AVCaptureVideoPreviewLayer(session: captureSession)
     private var isConfigured = false
-    private var unavailableLabel: UILabel?
+    private var messageLabel: UILabel?
 
     init(
         cameraPosition: AVCaptureDevice.Position,
@@ -76,6 +76,23 @@ final class CameraCaptureViewController: UIViewController, AVCapturePhotoCapture
         view.backgroundColor = .black
         previewLayer.videoGravity = .resizeAspectFill
         view.layer.addSublayer(previewLayer)
+
+        // Interruptions (phone calls, Split View) usually resume on their
+        // own, but not always; media-services resets never do. Restart the
+        // session in both cases so the preview cannot silently stay frozen.
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(sessionInterruptionEnded),
+            name: AVCaptureSession.interruptionEndedNotification,
+            object: captureSession
+        )
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(sessionRuntimeErrorOccurred),
+            name: AVCaptureSession.runtimeErrorNotification,
+            object: captureSession
+        )
+
         configureIfNeeded()
     }
 
@@ -121,11 +138,33 @@ final class CameraCaptureViewController: UIViewController, AVCapturePhotoCapture
               let data = photo.fileDataRepresentation(),
               let image = UIImage(data: data)?.normalizedForProcessing()
         else {
+            showMessage("The photo couldn't be captured. Try again.", autoHideAfter: 2.5)
             return
         }
 
         DispatchQueue.main.async { [onCapture] in
             onCapture(image)
+        }
+    }
+
+    @objc private func sessionInterruptionEnded() {
+        restartSessionIfNeeded()
+    }
+
+    @objc private func sessionRuntimeErrorOccurred(_ notification: Notification) {
+        let error = notification.userInfo?[AVCaptureSessionErrorKey] as? AVError
+        guard error?.code == .mediaServicesWereReset else {
+            return
+        }
+
+        restartSessionIfNeeded()
+    }
+
+    private func restartSessionIfNeeded() {
+        sessionQueue.async { [captureSession, isConfigured] in
+            if isConfigured, !captureSession.isRunning {
+                captureSession.startRunning()
+            }
         }
     }
 
@@ -144,13 +183,13 @@ final class CameraCaptureViewController: UIViewController, AVCapturePhotoCapture
                 if isGranted {
                     self?.configureSession()
                 } else {
-                    self?.showUnavailableMessage("Camera access is required to capture photos.")
+                    self?.showMessage("Camera access is required to capture photos.")
                 }
             }
         case .denied, .restricted:
-            showUnavailableMessage("Camera access is disabled. Use photo import or enable camera access in Settings.")
+            showMessage("Camera access is disabled. Use photo import or enable camera access in Settings.")
         @unknown default:
-            showUnavailableMessage("Camera access is unavailable.")
+            showMessage("Camera access is unavailable.")
         }
     }
 
@@ -165,7 +204,7 @@ final class CameraCaptureViewController: UIViewController, AVCapturePhotoCapture
                 for: .video,
                 position: self.cameraPosition
             ) else {
-                self.showUnavailableMessage("No camera is available in this environment.")
+                self.showMessage("No camera is available in this environment.")
                 return
             }
 
@@ -186,18 +225,20 @@ final class CameraCaptureViewController: UIViewController, AVCapturePhotoCapture
                 self.captureSession.commitConfiguration()
                 self.captureSession.startRunning()
             } catch {
-                self.showUnavailableMessage("Camera setup failed. Use photo import instead.")
+                self.showMessage("Camera setup failed. Use photo import instead.")
             }
         }
     }
 
-    private func showUnavailableMessage(_ message: String) {
+    /// Persistent when `autoHideAfter` is nil (configuration failures);
+    /// transient for recoverable errors like a failed capture.
+    private func showMessage(_ message: String, autoHideAfter delay: TimeInterval? = nil) {
         DispatchQueue.main.async { [weak self] in
             guard let self else {
                 return
             }
 
-            let label = self.unavailableLabel ?? UILabel()
+            let label = self.messageLabel ?? UILabel()
             label.text = message
             label.textColor = .white
             label.textAlignment = .center
@@ -214,7 +255,18 @@ final class CameraCaptureViewController: UIViewController, AVCapturePhotoCapture
                 ])
             }
 
-            self.unavailableLabel = label
+            label.isHidden = false
+            self.messageLabel = label
+            UIAccessibility.post(notification: .announcement, argument: message)
+
+            if let delay {
+                DispatchQueue.main.asyncAfter(deadline: .now() + delay) { [weak label] in
+                    // Leave the label alone if a newer message replaced this one.
+                    if label?.text == message {
+                        label?.isHidden = true
+                    }
+                }
+            }
         }
     }
 }

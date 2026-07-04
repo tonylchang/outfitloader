@@ -23,6 +23,7 @@
 ### Fixed
 
 - Closet, shelf, and look-detail images recover when iOS purges cached thumbnails under storage pressure: the thumbnail is regenerated in place from the durable original instead of showing a placeholder forever.
+- A failed camera capture now shows a brief "try again" message (with a VoiceOver announcement) instead of silently doing nothing, and the camera session restarts after interruptions such as phone calls or media-services resets instead of leaving a frozen preview.
 - Double-tapping "Use This Avatar" during onboarding no longer creates two avatar profiles, and rapid taps on a shelf item can no longer race the image load into a wrong toggle state.
 - Saved-look previews always render on a white background. They previously baked in whichever light/dark appearance was active at save time, leaving the lookbook grid a mix of light and dark cards.
 - Lookbook previews refresh on screen after a wardrobe item's photo is replaced. The preview file is rewritten at the same path, which never retriggered the image loader; it now also keys off the asset's update time.

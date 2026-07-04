@@ -1,5 +1,23 @@
 # Changelog
 
+## Unreleased
+
+### Added
+
+- Layered Liquid Glass app icon (`AppIcon.icon`) with the brand gradient fill and vector ring, alongside the flat icon fallbacks.
+- VoiceOver custom actions on the try-on canvas: move a placed item up/down/left/right in 5% steps, remove it, and hear its position; the avatar and layers now expose button and selected-state traits.
+- Test coverage for MediaStore file IO, TryOnComposer rendering (including opacity blending and z-order), WardrobeRepository create/replace/delete transactions, and the clothing-extraction fallback contract.
+
+### Changed
+
+- Promoted `MediaStore` to an actor-backed async service; repositories and views now await media IO, and image encoding runs off the main thread.
+- Repository delete flows save SwiftData before removing files, so a failed save can no longer leave rows pointing at missing media.
+- The camera capture overlay's framing hint becomes fully opaque when Reduce Transparency is enabled.
+
+### Fixed
+
+- Saved-look previews now honor avatar and clothing opacity. The composer previously set opacity through the graphics context, which `UIImage.draw(in:)` ignores, so previews always rendered layers fully opaque.
+
 ## 0.1.0 - 2026-07-03
 
 Milestone 1: the TestFlight-able MVP. First build uploaded to TestFlight.

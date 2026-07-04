@@ -71,6 +71,8 @@ struct GuidedCameraSheet: View {
 private struct CameraGuideOverlay: View {
     let mode: CameraCaptureView.Mode
 
+    @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
+
     var body: some View {
         GeometryReader { proxy in
             let size = proxy.size
@@ -92,7 +94,7 @@ private struct CameraGuideOverlay: View {
                         .foregroundStyle(.white)
                         .padding(.horizontal, 12)
                         .padding(.vertical, 8)
-                        .background(.black.opacity(0.45), in: Capsule())
+                        .background(.black.opacity(reduceTransparency ? 1 : 0.6), in: Capsule())
                         .padding(.bottom, 128)
                 }
             }

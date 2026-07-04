@@ -21,7 +21,7 @@ struct ReplaceWardrobePhotoSheet: View {
         NavigationStack {
             Form {
                 Section("Current Photo") {
-                    MediaImageView(asset: item.thumbnailImage ?? item.displayImage, placeholderSymbol: "tshirt")
+                    MediaImageView(asset: item.thumbnailImage, fallback: item.displayImage, placeholderSymbol: "tshirt")
                         .frame(maxWidth: .infinity)
                         .frame(height: 220)
                         .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))

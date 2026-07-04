@@ -22,6 +22,7 @@
 
 ### Fixed
 
+- Closet, shelf, and look-detail images recover when iOS purges cached thumbnails under storage pressure: the thumbnail is regenerated in place from the durable original instead of showing a placeholder forever.
 - Saved-look previews now honor avatar and clothing opacity. The composer previously set opacity through the graphics context, which `UIImage.draw(in:)` ignores, so previews always rendered layers fully opaque.
 
 ## 0.1.0 - 2026-07-03

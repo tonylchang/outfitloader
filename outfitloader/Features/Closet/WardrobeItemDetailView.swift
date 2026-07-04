@@ -28,7 +28,7 @@ struct WardrobeItemDetailView: View {
     var body: some View {
         Form {
             Section {
-                MediaImageView(asset: item.thumbnailImage ?? item.displayImage, placeholderSymbol: "tshirt")
+                MediaImageView(asset: item.thumbnailImage, fallback: item.displayImage, placeholderSymbol: "tshirt")
                     .frame(maxWidth: .infinity)
                     .frame(height: 280)
                     .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))

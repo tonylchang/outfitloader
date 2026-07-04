@@ -9,7 +9,6 @@ struct AddWardrobeItemSheet: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
     @Environment(\.mediaStore) private var mediaStore
-    @Query(sort: \ClosetCategory.sortIndex) private var categories: [ClosetCategory]
 
     @State private var photoSelection = WardrobePhotoSelection()
     @State private var name = ""
@@ -65,7 +64,6 @@ struct AddWardrobeItemSheet: View {
         }
 
         let trimmedName = name.trimmingCharacters(in: .whitespacesAndNewlines)
-        let category = categories.first { $0.kindRawValue == selectedKind.rawValue }
 
         isSaving = true
         Task {
@@ -74,7 +72,6 @@ struct AddWardrobeItemSheet: View {
                 try await repository.createItem(
                     named: trimmedName.isEmpty ? selectedKind.newItemName : trimmedName,
                     kind: selectedKind,
-                    category: category,
                     originalImage: originalImage,
                     processedImage: photoSelection.processedImageForSave,
                     capturedFrom: photoSelection.imageSource

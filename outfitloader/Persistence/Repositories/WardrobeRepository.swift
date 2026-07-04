@@ -25,7 +25,6 @@ struct WardrobeRepository {
     func createItem(
         named name: String,
         kind: CategoryKind,
-        category: ClosetCategory?,
         originalImage: UIImage,
         processedImage: UIImage?,
         capturedFrom source: ImageSource
@@ -48,7 +47,6 @@ struct WardrobeRepository {
 
         let sortIndex = (try? modelContext.fetchCount(FetchDescriptor<WardrobeItem>())) ?? 0
         let item = WardrobeItem(id: itemID, name: name, kind: kind, sortIndex: sortIndex)
-        item.category = category
         item.originalImage = ImageAsset(draft: originalDraft)
         item.processedImage = processedDraft.map { ImageAsset(draft: $0) }
         item.thumbnailImage = ImageAsset(draft: thumbnailDraft)

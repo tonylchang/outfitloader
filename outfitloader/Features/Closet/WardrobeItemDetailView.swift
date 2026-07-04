@@ -7,7 +7,6 @@ struct WardrobeItemDetailView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
     @Environment(\.mediaStore) private var mediaStore
-    @Query(sort: \ClosetCategory.sortIndex) private var categories: [ClosetCategory]
     @Query(
         filter: #Predicate<OutfitLook> { $0.isArchived == false },
         sort: \OutfitLook.createdAt,
@@ -102,7 +101,6 @@ struct WardrobeItemDetailView: View {
             item.categoryKind ?? .tops
         } set: { newKind in
             item.categoryKindRawValue = newKind.rawValue
-            item.category = categories.first { $0.kindRawValue == newKind.rawValue }
             item.updatedAt = .now
         }
     }

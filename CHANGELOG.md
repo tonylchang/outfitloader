@@ -12,6 +12,7 @@
 
 ### Changed
 
+- Wardrobe items now store their category as a single raw value; the redundant hand-synced relationship to the seeded category rows was removed from the schema.
 - Promoted `MediaStore` to an actor-backed async service; repositories and views now await media IO, and image encoding runs off the main thread.
 - Repository delete flows save SwiftData before removing files, so a failed save can no longer leave rows pointing at missing media.
 - The camera capture overlay's framing hint becomes fully opaque when Reduce Transparency is enabled.

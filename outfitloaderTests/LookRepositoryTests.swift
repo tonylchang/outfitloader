@@ -38,7 +38,6 @@ final class LookRepositoryTests: XCTestCase {
         let item = try await wardrobeRepository.createItem(
             named: "Red Shirt",
             kind: .tops,
-            category: nil,
             originalImage: clothingImage,
             processedImage: nil,
             capturedFrom: .photoLibrary
@@ -125,7 +124,6 @@ final class LookRepositoryTests: XCTestCase {
         let item = try await wardrobeRepository.createItem(
             named: "Green Shirt",
             kind: .tops,
-            category: nil,
             originalImage: clothingImage,
             processedImage: nil,
             capturedFrom: .camera

@@ -8,10 +8,8 @@ This document translates the active spec into an implementation plan for the Tes
 > generation, the try-on studio, saved-look persistence, lookbook
 > detail/reopen, settings with local data deletion, and avatar body-shape
 > controls. Swift Testing, XCTest, and XCUITest targets now cover the highest-risk
-> model/rendering paths. The full physical-device TestFlight readiness
-> checklist has passed, and release prep (published privacy policy, App Store
-> Connect privacy answers, version/build confirmation) is done. Remaining
-> Milestone 1 work: archive and manual upload.
+> model/rendering paths. Milestone 1 is complete: 0.1.0 build 1 was uploaded
+> to TestFlight on 2026-07-03 and tagged v0.1.0.
 > Sections below note where the implementation
 > consolidated the original plan.
 

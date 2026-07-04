@@ -2,10 +2,9 @@
 
 ## Current Phase
 
-- Milestone 1 (TestFlight-able MVP) implementation is complete and the technical spike is complete and retired.
-- Implemented so far: app shell, SwiftData persistence with seeded categories, local media storage, closet capture/import/replace-photo with native clothing foreground extraction, avatar onboarding with silhouette generation and body-shape controls, the try-on studio, save-look persistence, lookbook detail/reopen, and settings with local data deletion.
-- The full physical-device TestFlight readiness checklist has been completed by the project owner, and release prep (published privacy policy, App Store Connect privacy answers, version/build confirmation) is done.
-- Remaining before external TestFlight: archive and manual upload.
+- Milestone 1 (TestFlight-able MVP) is complete: version 0.1.0 build 1 was uploaded to TestFlight on 2026-07-03 and tagged v0.1.0.
+- Implemented: app shell, SwiftData persistence with seeded categories, local media storage, closet capture/import/replace-photo with native clothing foreground extraction, avatar onboarding with silhouette generation and body-shape controls, the try-on studio, save-look persistence, lookbook detail/reopen, settings with local data deletion, and an app icon with dark/tinted appearances.
+- Current focus: gather TestFlight feedback to validate the core avatar and virtual closet experience before starting Phase 1 features, per the long-term plan.
 - Development approach is milestone-based.
 - The first milestone should produce a TestFlight-able MVP.
 

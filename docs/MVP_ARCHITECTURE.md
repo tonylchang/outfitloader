@@ -262,11 +262,11 @@ Application Support/
     Media/
       Avatars/
         {avatarID}/
-          original.jpg
+          original.heic (or .jpg)
           silhouette.png
       Wardrobe/
         {itemID}/
-          original.jpg
+          original.heic (or .jpg)
           processed.png
       Outfits/
         {lookID}/
@@ -280,7 +280,7 @@ Caches/
 
 ### Format Rules
 
-- Preserve camera/photo imports as HEIC when practical, otherwise JPEG. The current `MediaStore` re-encodes imports to JPEG (quality 0.9) after orientation normalization; HEIC passthrough is a possible later optimization.
+- Preserve camera/photo imports as HEIC when practical, otherwise JPEG. `MediaStore` encodes imported originals as HEIC (quality 0.9, after orientation normalization) when the platform supports HEIC encoding, falling back to JPEG when it does not.
 - Use PNG for assets that need alpha, such as silhouettes and transparent processed clothing images.
 - Use JPEG for thumbnails and outfit previews unless transparency is required.
 - Generate thumbnails at stable sizes for grid performance, such as small grid, large grid, and detail preview variants if profiling shows the need.

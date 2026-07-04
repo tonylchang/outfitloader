@@ -13,7 +13,9 @@ struct MainShellView: View {
     var body: some View {
         TabView(selection: $selectedTab) {
             Tab("Try On", systemImage: "person.crop.rectangle", value: .tryOn) {
-                TryOnStudioView(composition: composition)
+                TryOnStudioView(composition: composition) {
+                    selectedTab = .closet
+                }
             }
 
             Tab("Closet", systemImage: "tshirt", value: .closet) {
@@ -21,9 +23,14 @@ struct MainShellView: View {
             }
 
             Tab("Lookbook", systemImage: "rectangle.grid.2x2", value: .lookbook) {
-                LookbookView { look in
-                    reopenLook(look)
-                }
+                LookbookView(
+                    onReopenLook: { look in
+                        reopenLook(look)
+                    },
+                    onOpenTryOn: {
+                        selectedTab = .tryOn
+                    }
+                )
             }
 
             Tab("Avatar", systemImage: "person.crop.circle", value: .avatar) {

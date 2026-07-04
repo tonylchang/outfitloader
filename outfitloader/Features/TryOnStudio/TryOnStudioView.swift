@@ -7,6 +7,7 @@ import UIKit
 /// tapping a placed item removes it.
 struct TryOnStudioView: View {
     @Bindable var composition: TryOnComposition
+    var onOpenCloset: () -> Void = {}
 
     @Environment(\.modelContext) private var modelContext
     @Environment(\.mediaStore) private var mediaStore
@@ -106,12 +107,21 @@ struct TryOnStudioView: View {
             }
 
             if shelfItems.isEmpty {
-                Text(items.isEmpty
-                    ? "Add clothes in the Closet tab to try them on."
-                    : "No items in \(shelfFilter.title).")
-                    .font(.footnote)
-                    .foregroundStyle(.secondary)
-                    .frame(maxWidth: .infinity, minHeight: 60)
+                VStack(spacing: 6) {
+                    Text(items.isEmpty
+                        ? "Your closet is empty."
+                        : "No items in \(shelfFilter.title).")
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+
+                    if items.isEmpty {
+                        Button("Add clothes in Closet", action: onOpenCloset)
+                            .font(.footnote.weight(.semibold))
+                            .buttonStyle(.bordered)
+                            .controlSize(.small)
+                    }
+                }
+                .frame(maxWidth: .infinity, minHeight: 60)
             } else {
                 ScrollView(.horizontal, showsIndicators: false) {
                     LazyHStack(spacing: 10) {

@@ -87,7 +87,7 @@ private struct CameraGuideOverlay: View {
                     .frame(width: guideWidth, height: guideHeight)
                     .shadow(radius: 8)
 
-                VStack {
+                VStack(spacing: 6) {
                     Spacer()
                     Text(mode == .avatarSelfie ? "Full body in frame" : "Single item in frame")
                         .font(.caption.weight(.semibold))
@@ -95,7 +95,14 @@ private struct CameraGuideOverlay: View {
                         .padding(.horizontal, 12)
                         .padding(.vertical, 8)
                         .background(.black.opacity(reduceTransparency ? 1 : 0.6), in: Capsule())
-                        .padding(.bottom, 128)
+
+                    Text(mode == .avatarSelfie ? "Face the camera in even light" : "Plain background, no shadows")
+                        .font(.caption2.weight(.medium))
+                        .foregroundStyle(.white)
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 5)
+                        .background(.black.opacity(reduceTransparency ? 1 : 0.6), in: Capsule())
+                        .padding(.bottom, 118)
                 }
             }
         }

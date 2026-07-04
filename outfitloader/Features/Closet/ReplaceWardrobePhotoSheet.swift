@@ -52,7 +52,7 @@ struct ReplaceWardrobePhotoSheet: View {
                 GuidedCameraSheet(
                     mode: .clothing,
                     title: "Clothing Capture",
-                    guidance: "Place one item flat in frame with as plain a background as possible."
+                    guidance: "Lay one item flat on a plain, contrasting surface. Bright, even light with no shadows makes a cleaner cutout."
                 ) { image in
                     photoSelection.handleImage(image, from: .camera)
                 }

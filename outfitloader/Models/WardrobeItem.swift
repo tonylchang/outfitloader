@@ -7,7 +7,8 @@ final class WardrobeItem {
     var createdAt: Date
     var updatedAt: Date
     var name: String
-    var category: ClosetCategory?
+    /// Single source of truth for the item's category. ClosetCategory rows
+    /// exist for future custom categories but items do not reference them.
     var categoryKindRawValue: String
     @Relationship(deleteRule: .cascade) var originalImage: ImageAsset?
     @Relationship(deleteRule: .cascade) var processedImage: ImageAsset?

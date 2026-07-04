@@ -38,7 +38,6 @@ final class WardrobeRepositoryTests {
         let item = try await repository.createItem(
             named: "Red Tee",
             kind: .tops,
-            category: nil,
             originalImage: original,
             processedImage: processed,
             capturedFrom: .camera
@@ -64,7 +63,6 @@ final class WardrobeRepositoryTests {
         let item = try await repository.createItem(
             named: "Uncut Jacket",
             kind: .tops,
-            category: nil,
             originalImage: original,
             processedImage: nil,
             capturedFrom: .photoLibrary
@@ -79,7 +77,6 @@ final class WardrobeRepositoryTests {
         let item = try await repository.createItem(
             named: "Doomed Shirt",
             kind: .tops,
-            category: nil,
             originalImage: original,
             processedImage: nil,
             capturedFrom: .camera
@@ -102,7 +99,6 @@ final class WardrobeRepositoryTests {
         let item = try await repository.createItem(
             named: "Swapped Hoodie",
             kind: .tops,
-            category: nil,
             originalImage: TestImageFactory.makeImage(size: CGSize(width: 60, height: 60), color: .systemRed),
             processedImage: TestImageFactory.makeImage(size: CGSize(width: 50, height: 50), color: .systemGreen),
             capturedFrom: .camera

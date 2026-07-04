@@ -35,6 +35,21 @@ struct TryOnComposerTests {
         #expect(border.b > 200)
     }
 
+    @Test func backgroundStaysWhiteWhenComposedUnderDarkAppearance() throws {
+        // Previews are stored images; the background must not depend on the
+        // appearance that happened to be active at save time.
+        var composed: UIImage?
+        UITraitCollection(userInterfaceStyle: .dark).performAsCurrent {
+            composed = TryOnComposer().compose(avatar: avatar, layers: [])
+        }
+
+        let output = try #require(composed)
+        let border = try #require(pixel(at: CGPoint(x: 10, y: 10), in: output))
+        #expect(border.r > 240)
+        #expect(border.g > 240)
+        #expect(border.b > 240)
+    }
+
     @Test func clothingLayerDrawsOverAvatarAtItsAnchor() throws {
         let clothing = TestImageFactory.makeImage(size: CGSize(width: 40, height: 40), color: .blue)
         let layer = OutfitRenderLayer(image: clothing, placement: ClothingPlacement(opacity: 1), zIndex: 1)

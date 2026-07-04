@@ -23,6 +23,9 @@ struct TryOnStudioView: View {
     @State private var avatarImage: UIImage?
     @State private var shelfFilter: CategoryFilter = .all
     @State private var showingSaveSheet = false
+    /// Items whose placement image load is in flight; taps on them are
+    /// ignored so rapid tapping cannot double-place or mis-toggle an item.
+    @State private var pendingPlacementItemIDs: Set<UUID> = []
 
     private var activeAvatar: AvatarProfile? {
         activeAvatars.first
@@ -163,6 +166,10 @@ struct TryOnStudioView: View {
 
     @MainActor
     private func toggleItem(_ item: WardrobeItem) {
+        guard !pendingPlacementItemIDs.contains(item.id) else {
+            return
+        }
+
         if composition.isPlaced(itemID: item.id) {
             composition.remove(itemID: item.id)
             return
@@ -178,7 +185,10 @@ struct TryOnStudioView: View {
         let itemName = item.name
         let kind = item.categoryKind ?? .tops
 
+        pendingPlacementItemIDs.insert(itemID)
         Task {
+            defer { pendingPlacementItemIDs.remove(itemID) }
+
             guard let image = await mediaStore.loadImage(
                 relativePath: relativePath,
                 kindRawValue: kindRawValue

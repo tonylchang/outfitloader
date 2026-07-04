@@ -15,6 +15,7 @@ struct AvatarOnboardingView: View {
     @State private var silhouetteImage: UIImage?
     @State private var imageSource: ImageSource = .photoLibrary
     @State private var isProcessing = false
+    @State private var isSaving = false
     @State private var statusMessage: String?
     @State private var errorMessage: String?
 
@@ -120,12 +121,12 @@ struct AvatarOnboardingView: View {
                 }
                 .buttonStyle(.borderedProminent)
                 .controlSize(.large)
-                .disabled(isProcessing)
+                .disabled(isProcessing || isSaving)
 
                 Button("Start Over", role: .destructive) {
                     resetCapture()
                 }
-                .disabled(isProcessing)
+                .disabled(isProcessing || isSaving)
             }
         }
     }
@@ -208,10 +209,11 @@ struct AvatarOnboardingView: View {
 
     @MainActor
     private func saveAvatar() {
-        guard let sourceImage else {
+        guard let sourceImage, !isSaving else {
             return
         }
 
+        isSaving = true
         Task {
             do {
                 let repository = AvatarRepository(modelContext: modelContext, mediaStore: mediaStore)
@@ -223,6 +225,8 @@ struct AvatarOnboardingView: View {
             } catch {
                 errorMessage = error.localizedDescription
             }
+
+            isSaving = false
         }
     }
 

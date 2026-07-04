@@ -1,0 +1,33 @@
+# Unit tests on every push to main and every pull request.
+# Apple toolchain only (see spec/elements/STACK.md): no third-party actions
+# or tools beyond actions/checkout. UI tests stay manual/local for now.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: Build and unit test
+    runs-on: macos-26
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Select latest Xcode 26
+        run: sudo xcode-select -s "$(ls -d /Applications/Xcode_26*.app | sort -V | tail -1)"
+
+      - name: Run unit tests
+        run: |
+          xcodebuild test \
+            -project outfitloader.xcodeproj \
+            -scheme outfitloader \
+            -destination 'platform=iOS Simulator,name=iPhone 17' \
+            -only-testing:outfitloaderTests \
+            CODE_SIGNING_ALLOWED=NO

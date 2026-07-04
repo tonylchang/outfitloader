@@ -11,6 +11,10 @@
 - Test coverage for MediaStore file IO, TryOnComposer rendering (including opacity blending and z-order), WardrobeRepository create/replace/delete transactions, and the clothing-extraction fallback contract.
 - Test coverage for try-on canvas state (placement, category replacement, selection, reset), AvatarRepository transactions, the delete-all-data contract, and preview refreshes; look tests now run on Swift Testing and match typed error cases instead of display strings.
 
+### Added (infrastructure)
+
+- GitHub Actions CI: the unit test suite builds and runs on an iOS simulator for every push to `main` and every pull request, using only the Apple toolchain.
+
 ### Changed
 
 - Wardrobe items now store their category as a single raw value; the redundant hand-synced relationship to the seeded category rows was removed from the schema.

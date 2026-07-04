@@ -8,8 +8,8 @@
 ## CI/CD
 
 - Manual TestFlight uploads from Xcode / App Store Connect.
-- No automated CI/CD requirement for the initial release.
-- Automated builds may be considered later if the project gains collaborators or frequent release needs.
+- GitHub Actions runs the unit test suite (`xcodebuild test` on an iOS simulator) for pushes to `main` and pull requests (added 2026-07-04). Apple toolchain only; no third-party actions or tools beyond `actions/checkout`.
+- Automated release/deploy pipelines remain out of scope; revisit if the project gains collaborators or frequent release needs.
 
 ## Database Hosting
 

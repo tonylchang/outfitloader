@@ -63,13 +63,15 @@ struct WardrobeRepository {
         return item
     }
 
+    /// Number of distinct non-archived looks that reference the item.
     func savedLookUsageCount(for item: WardrobeItem) throws -> Int {
-        let slots = try modelContext.fetch(FetchDescriptor<OutfitSlot>())
+        let itemID = item.id
+        let slots = try modelContext.fetch(
+            FetchDescriptor<OutfitSlot>(predicate: #Predicate { $0.wardrobeItem?.id == itemID })
+        )
+
         let lookIDs = slots.reduce(into: Set<UUID>()) { result, slot in
-            guard slot.wardrobeItem?.id == item.id,
-                  let look = slot.look,
-                  !look.isArchived
-            else {
+            guard let look = slot.look, !look.isArchived else {
                 return
             }
 

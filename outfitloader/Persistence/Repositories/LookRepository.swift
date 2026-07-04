@@ -147,16 +147,20 @@ struct LookRepository {
     }
 
     func refreshPreviews(containing item: WardrobeItem) async {
-        guard let fetchedLooks = try? modelContext.fetch(FetchDescriptor<OutfitLook>()) else {
+        let itemID = item.id
+        guard let slots = try? modelContext.fetch(
+            FetchDescriptor<OutfitSlot>(predicate: #Predicate { $0.wardrobeItem?.id == itemID })
+        ) else {
             return
         }
 
-        let looks = fetchedLooks.filter { look in
-            !look.isArchived && look.slots.contains { $0.wardrobeItem?.id == item.id }
-        }
+        var seenLookIDs: Set<UUID> = []
+        let looks = slots.compactMap { slot -> OutfitLook? in
+            guard let look = slot.look, !look.isArchived, seenLookIDs.insert(look.id).inserted else {
+                return nil
+            }
 
-        guard !looks.isEmpty else {
-            return
+            return look
         }
 
         for look in looks {

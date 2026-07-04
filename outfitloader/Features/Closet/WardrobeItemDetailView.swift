@@ -7,21 +7,24 @@ struct WardrobeItemDetailView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
     @Environment(\.mediaStore) private var mediaStore
-    @Query(
-        filter: #Predicate<OutfitLook> { $0.isArchived == false },
-        sort: \OutfitLook.createdAt,
-        order: .reverse
-    )
-    private var looks: [OutfitLook]
+    @Query private var slotsUsingItem: [OutfitSlot]
 
     @State private var showingDeleteConfirmation = false
     @State private var showingReplacePhotoSheet = false
     @State private var errorMessage: String?
 
+    init(item: WardrobeItem) {
+        self.item = item
+        let itemID = item.id
+        _slotsUsingItem = Query(filter: #Predicate<OutfitSlot> { $0.wardrobeItem?.id == itemID })
+    }
+
+    /// Distinct non-archived looks using this item; mirrors
+    /// WardrobeRepository.savedLookUsageCount but stays live via @Query.
     private var usageCount: Int {
-        looks.filter { look in
-            look.slots.contains { $0.wardrobeItem?.id == item.id }
-        }.count
+        Set(slotsUsingItem.compactMap { slot in
+            slot.look.flatMap { $0.isArchived ? nil : $0.id }
+        }).count
     }
 
     var body: some View {

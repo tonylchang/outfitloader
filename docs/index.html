@@ -1,0 +1,543 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <meta name="description" content="outfitloader turns one full-body selfie into your avatar and your real clothes into a digital closet. Mix, match, and save looks in seconds — all on your iPhone.">
+  <title>outfitloader — try on your closet</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --violet: #5b57c9;
+      --amethyst: #8a5bcf;
+      --orchid: #b06bc8;
+      --gradient: linear-gradient(135deg, var(--violet) 0%, var(--amethyst) 55%, var(--orchid) 100%);
+      --paper: #fcfbfe;
+      --ink: #201d28;
+      --muted: #6e6880;
+      --link: #4f4abf;
+      --card: rgba(255, 255, 255, 0.82);
+      --card-border: rgba(91, 87, 201, 0.18);
+      --hairline: rgba(32, 29, 40, 0.12);
+      --canvas: #f3f1f9;
+      --chip: #ffffff;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --paper: #16131c;
+        --ink: #edeaf4;
+        --muted: #a49dbb;
+        --link: #bdb4f5;
+        --card: rgba(30, 26, 38, 0.82);
+        --card-border: rgba(176, 107, 200, 0.24);
+        --hairline: rgba(237, 234, 244, 0.14);
+        --canvas: #211d2b;
+        --chip: #2b2637;
+      }
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: var(--paper);
+      color: var(--ink);
+      font: 17px/1.6 -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", sans-serif;
+    }
+
+    a { color: var(--link); }
+
+    :focus-visible {
+      outline: 3px solid var(--amethyst);
+      outline-offset: 2px;
+      border-radius: 6px;
+    }
+
+    .wrap {
+      max-width: 1020px;
+      margin: 0 auto;
+      padding: 0 20px;
+    }
+
+    /* ---------- header ---------- */
+
+    header {
+      padding: 20px 0;
+    }
+
+    .header-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .mark {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      text-decoration: none;
+      color: var(--ink);
+    }
+
+    .mark-icon {
+      width: 30px;
+      height: 30px;
+      border-radius: 8px;
+      background: var(--gradient);
+      display: grid;
+      place-items: center;
+    }
+
+    .mark-icon::before {
+      content: "";
+      width: 13px;
+      height: 13px;
+      border-radius: 50%;
+      border: 3px solid #fbfaff;
+    }
+
+    .header-row nav {
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      font-size: 0.95rem;
+    }
+
+    .beta-pill {
+      font: 600 0.75rem/1 ui-monospace, "SF Mono", Menlo, monospace;
+      letter-spacing: 0.08em;
+      color: #fff;
+      background: var(--gradient);
+      border-radius: 999px;
+      padding: 7px 12px;
+      white-space: nowrap;
+    }
+
+    /* ---------- hero ---------- */
+
+    .hero {
+      display: grid;
+      grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+      gap: clamp(24px, 5vw, 64px);
+      align-items: center;
+      padding: clamp(32px, 7vw, 88px) 0 clamp(40px, 7vw, 88px);
+    }
+
+    h1 {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", sans-serif;
+      font-size: clamp(2.3rem, 5.4vw, 3.6rem);
+      font-weight: 800;
+      line-height: 1.04;
+      letter-spacing: -0.025em;
+    }
+
+    h1 em {
+      font-style: normal;
+      background: var(--gradient);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+
+    .hero p {
+      margin: 20px 0 0;
+      max-width: 46ch;
+      font-size: 1.1rem;
+      color: var(--muted);
+    }
+
+    .hero-hint {
+      margin-top: 28px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.92rem;
+      color: var(--muted);
+    }
+
+    .hero-hint .ring {
+      flex: none;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      border: 3px solid var(--amethyst);
+    }
+
+    /* ---------- phone demo ---------- */
+
+    .phone {
+      justify-self: center;
+      width: min(300px, 82vw);
+      border-radius: 44px;
+      border: 1px solid var(--card-border);
+      background: var(--paper);
+      box-shadow:
+        0 32px 64px -32px rgba(63, 46, 130, 0.5),
+        inset 0 0 0 6px color-mix(in srgb, var(--ink) 88%, var(--paper) 12%);
+      padding: 16px;
+    }
+
+    .screen {
+      border-radius: 30px;
+      overflow: hidden;
+      background: var(--canvas);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .screen-title {
+      font: 600 0.72rem/1 ui-monospace, "SF Mono", Menlo, monospace;
+      letter-spacing: 0.14em;
+      color: var(--muted);
+      text-align: center;
+      padding: 14px 0 8px;
+    }
+
+    .canvas {
+      position: relative;
+      padding: 4px 18px 10px;
+    }
+
+    .canvas svg {
+      display: block;
+      width: 100%;
+      height: auto;
+    }
+
+    .garment {
+      opacity: 0;
+      transition: opacity 0.25s ease, transform 0.25s ease;
+      transform: translateY(4px);
+    }
+
+    .garment.on {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .garment { transition: none; transform: none; }
+    }
+
+    .shelf {
+      display: flex;
+      gap: 8px;
+      padding: 10px 14px 16px;
+    }
+
+    .shelf button {
+      flex: 1;
+      font: 600 0.8rem/1.2 -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
+      color: var(--ink);
+      background: var(--chip);
+      border: 1.5px solid var(--card-border);
+      border-radius: 12px;
+      padding: 9px 4px 8px;
+      cursor: pointer;
+      display: grid;
+      justify-items: center;
+      gap: 5px;
+    }
+
+    .shelf button .swatch {
+      width: 22px;
+      height: 14px;
+      border-radius: 5px;
+    }
+
+    .shelf button[aria-pressed="true"] {
+      border-color: var(--amethyst);
+      box-shadow: 0 0 0 1.5px var(--amethyst);
+    }
+
+    .swatch-top { background: var(--violet); }
+    .swatch-bottom { background: var(--amethyst); }
+    .swatch-shoes { background: var(--orchid); }
+
+    /* ---------- sections ---------- */
+
+    section {
+      padding: clamp(36px, 6vw, 64px) 0;
+      border-top: 1px solid var(--hairline);
+    }
+
+    h2 {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin: 0;
+      font-size: clamp(1.5rem, 3vw, 1.9rem);
+      font-weight: 800;
+      letter-spacing: -0.02em;
+    }
+
+    h2::before {
+      content: "";
+      flex: none;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      border: 4px solid var(--amethyst);
+    }
+
+    .steps {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 18px;
+      margin-top: 28px;
+    }
+
+    .step {
+      border: 1px solid var(--card-border);
+      border-radius: 18px;
+      padding: 22px;
+      background: var(--card);
+    }
+
+    .step-num {
+      display: grid;
+      place-items: center;
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      border: 3px solid transparent;
+      background:
+        linear-gradient(var(--paper), var(--paper)) padding-box,
+        var(--gradient) border-box;
+      font-weight: 800;
+      font-size: 0.95rem;
+    }
+
+    .step h3 {
+      margin: 14px 0 0;
+      font-size: 1.05rem;
+      letter-spacing: -0.01em;
+    }
+
+    .step p {
+      margin: 8px 0 0;
+      font-size: 0.95rem;
+      color: var(--muted);
+    }
+
+    /* ---------- privacy ---------- */
+
+    .privacy-card {
+      margin-top: 28px;
+      border-radius: 20px;
+      padding: clamp(24px, 4vw, 40px);
+      background: var(--gradient);
+      color: #fff;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 20px;
+      align-items: center;
+    }
+
+    .privacy-card h3 {
+      margin: 0;
+      font-size: clamp(1.3rem, 2.6vw, 1.7rem);
+      font-weight: 800;
+      letter-spacing: -0.02em;
+    }
+
+    .privacy-card ul {
+      margin: 14px 0 0;
+      padding: 0;
+      list-style: none;
+      display: grid;
+      gap: 7px;
+      font-size: 0.98rem;
+    }
+
+    .privacy-card li {
+      display: flex;
+      align-items: baseline;
+      gap: 10px;
+    }
+
+    .privacy-card li::before {
+      content: "";
+      flex: none;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      border: 2.5px solid rgba(255, 255, 255, 0.92);
+      transform: translateY(1px);
+    }
+
+    .privacy-card a {
+      color: #fff;
+      font-weight: 600;
+    }
+
+    .privacy-ring {
+      width: clamp(90px, 12vw, 150px);
+      aspect-ratio: 1;
+      border-radius: 50%;
+      border: clamp(18px, 2.6vw, 30px) solid rgba(251, 250, 255, 0.95);
+    }
+
+    /* ---------- footer ---------- */
+
+    footer {
+      border-top: 1px solid var(--hairline);
+      padding: 26px 0 56px;
+    }
+
+    .footer-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px 24px;
+      align-items: baseline;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .footer-row a { color: var(--link); }
+
+    /* ---------- responsive ---------- */
+
+    @media (max-width: 780px) {
+      .hero { grid-template-columns: 1fr; }
+      .phone { margin-top: 8px; }
+      .steps { grid-template-columns: 1fr; }
+      .privacy-card { grid-template-columns: 1fr; }
+      .privacy-ring { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <header class="wrap">
+    <div class="header-row">
+      <a class="mark" href="./">
+        <span class="mark-icon" aria-hidden="true"></span>
+        outfitloader
+      </a>
+      <nav>
+        <a href="privacy.html">Privacy</a>
+        <span class="beta-pill">TESTFLIGHT BETA</span>
+      </nav>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <div class="hero">
+      <div>
+        <h1>Try outfits on you — <em>without trying them on</em>.</h1>
+        <p>outfitloader turns one full-body selfie into your avatar and your real clothes into a digital closet. Mix, match, and save looks in seconds, all on your iPhone.</p>
+        <p class="hero-hint"><span class="ring" aria-hidden="true"></span>Tap the closet below to dress the avatar.</p>
+      </div>
+
+      <div class="phone" aria-label="Interactive demo of the try-on studio">
+        <div class="screen">
+          <div class="screen-title">TRY ON</div>
+          <div class="canvas">
+            <svg viewBox="0 0 240 330" role="img" aria-label="Avatar silhouette wearing the items selected below">
+              <!-- avatar silhouette, symmetric about x=120 -->
+              <g fill="currentColor" opacity="0.8">
+                <circle cx="120" cy="42" r="22"/>
+                <path d="M120 70 C97 70 86 82 84 100 L84 150 C84 172 94 186 94 196 L94 300 Q94 310 105 310 L114 310 Q118 310 118 300 L118 210 L122 210 L122 300 Q122 310 126 310 L135 310 Q146 310 146 300 L146 196 C146 186 156 172 156 150 L156 100 C154 82 143 70 120 70 Z"/>
+                <rect x="70" y="82" width="15" height="100" rx="7.5"/>
+                <rect x="155" y="82" width="15" height="100" rx="7.5"/>
+                <rect x="92" y="302" width="30" height="16" rx="8"/>
+                <rect x="118" y="302" width="30" height="16" rx="8"/>
+              </g>
+              <!-- top: torso block plus short sleeves -->
+              <g id="g-top" class="garment" fill="#5b57c9">
+                <rect x="82" y="74" width="76" height="92" rx="18"/>
+                <rect x="66" y="80" width="24" height="58" rx="11"/>
+                <rect x="150" y="80" width="24" height="58" rx="11"/>
+              </g>
+              <!-- bottoms: waistband plus two pant legs to mid-shin -->
+              <g id="g-bottom" class="garment" fill="#8a5bcf">
+                <rect x="90" y="158" width="60" height="26" rx="8"/>
+                <rect x="90" y="176" width="29" height="94" rx="10"/>
+                <rect x="121" y="176" width="29" height="94" rx="10"/>
+              </g>
+              <!-- shoes: covering the feet -->
+              <g id="g-shoes" class="garment" fill="#b06bc8">
+                <rect x="88" y="298" width="36" height="22" rx="10"/>
+                <rect x="116" y="298" width="36" height="22" rx="10"/>
+              </g>
+            </svg>
+          </div>
+          <div class="shelf" role="group" aria-label="Closet items">
+            <button type="button" data-garment="g-top" aria-pressed="false">
+              <span class="swatch swatch-top" aria-hidden="true"></span>Top
+            </button>
+            <button type="button" data-garment="g-bottom" aria-pressed="false">
+              <span class="swatch swatch-bottom" aria-hidden="true"></span>Bottoms
+            </button>
+            <button type="button" data-garment="g-shoes" aria-pressed="false">
+              <span class="swatch swatch-shoes" aria-hidden="true"></span>Shoes
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <section aria-labelledby="how-heading">
+      <h2 id="how-heading">How it works</h2>
+      <div class="steps">
+        <div class="step">
+          <div class="step-num" aria-hidden="true">1</div>
+          <h3>Snap one selfie</h3>
+          <p>A guided full-body capture becomes your avatar. The silhouette is generated on your iPhone with Apple's Vision framework, and you can tune the proportions to match you.</p>
+        </div>
+        <div class="step">
+          <div class="step-num" aria-hidden="true">2</div>
+          <h3>Photograph your clothes</h3>
+          <p>Shoot or import each item once. The background is removed on device, and your pieces are organized into tops, bottoms, shoes, and accessories.</p>
+        </div>
+        <div class="step">
+          <div class="step-num" aria-hidden="true">3</div>
+          <h3>Mix, match, save</h3>
+          <p>Tap items onto your avatar, drag them into place, and adjust the fit. Save the looks you love to your lookbook and reopen them any morning you're stuck.</p>
+        </div>
+      </div>
+    </section>
+
+    <section aria-labelledby="privacy-heading">
+      <h2 id="privacy-heading">Your closet is nobody's data</h2>
+      <div class="privacy-card">
+        <div>
+          <h3>Everything stays on your iPhone.</h3>
+          <ul>
+            <li>No account, no cloud, no server.</li>
+            <li>No analytics and no tracking.</li>
+            <li>No photos sent to third-party AI.</li>
+            <li>Your data leaves only in your own encrypted device backups.</li>
+          </ul>
+          <p style="margin: 16px 0 0;"><a href="privacy.html">Read the full privacy policy</a></p>
+        </div>
+        <div class="privacy-ring" aria-hidden="true"></div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="wrap footer-row">
+      <span>outfitloader is in TestFlight beta for iPhone and iPad.</span>
+      <a href="privacy.html">Privacy policy</a>
+      <span>Like the app, this page loads nothing from anywhere else.</span>
+    </div>
+  </footer>
+
+  <script>
+    for (const button of document.querySelectorAll(".shelf button")) {
+      button.addEventListener("click", () => {
+        const garment = document.getElementById(button.dataset.garment);
+        const on = garment.classList.toggle("on");
+        button.setAttribute("aria-pressed", String(on));
+      });
+    }
+  </script>
+</body>
+</html>

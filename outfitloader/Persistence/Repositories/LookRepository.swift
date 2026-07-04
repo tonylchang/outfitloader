@@ -48,15 +48,20 @@ struct LookRepository {
             throw LookRepositoryError.emptyLook
         }
 
+        // Resolve every layer to its wardrobe item before any file or row is
+        // written, so a missing item can never abort mid-transaction.
         let itemsByID = Dictionary(uniqueKeysWithValues: wardrobeItems.map { ($0.id, $0) })
-        let sortedLayers = composition.sortedLayers
-        for layer in sortedLayers where itemsByID[layer.itemID] == nil {
-            throw LookRepositoryError.missingWardrobeItem(layer.itemName)
+        let placedLayers: [(layer: TryOnLayer, item: WardrobeItem)] = try composition.sortedLayers.map { layer in
+            guard let item = itemsByID[layer.itemID] else {
+                throw LookRepositoryError.missingWardrobeItem(layer.itemName)
+            }
+
+            return (layer: layer, item: item)
         }
 
         let lookID = UUID()
-        let renderLayers = sortedLayers.map {
-            OutfitRenderLayer(image: $0.image, placement: $0.placement, zIndex: $0.zIndex)
+        let renderLayers = placedLayers.map {
+            OutfitRenderLayer(image: $0.layer.image, placement: $0.layer.placement, zIndex: $0.layer.zIndex)
         }
         let preview = TryOnComposer().compose(
             avatar: avatarImage,
@@ -86,11 +91,7 @@ struct LookRepository {
         look.previewImage = ImageAsset(draft: previewDraft)
         modelContext.insert(look)
 
-        for layer in sortedLayers {
-            guard let item = itemsByID[layer.itemID] else {
-                throw LookRepositoryError.missingWardrobeItem(layer.itemName)
-            }
-
+        for (layer, item) in placedLayers {
             let placement = layer.placement
             let slot = OutfitSlot(
                 kind: layer.categoryKind,

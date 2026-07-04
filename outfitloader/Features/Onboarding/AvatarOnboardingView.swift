@@ -39,7 +39,7 @@ struct AvatarOnboardingView: View {
                 GuidedCameraSheet(
                     mode: .avatarSelfie,
                     title: "Selfie Capture",
-                    guidance: "Keep your full body inside the guide with clear lighting."
+                    guidance: "Stand facing the camera with your full body inside the guide. Even light and a simple background give the best silhouette."
                 ) { image in
                     handleImage(image, from: .camera)
                 }

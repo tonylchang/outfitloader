@@ -2,6 +2,7 @@ import SwiftData
 import SwiftUI
 
 struct ClosetView: View {
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     @Query(
         filter: #Predicate<WardrobeItem> { $0.isArchived == false },
         sort: \WardrobeItem.createdAt,
@@ -31,11 +32,20 @@ struct ClosetView: View {
                         .buttonStyle(.borderedProminent)
                     }
                 } else if filteredItems.isEmpty {
-                    ContentUnavailableView(
-                        "Nothing in \(filter.title)",
-                        systemImage: "line.3.horizontal.decrease.circle",
-                        description: Text("No items in this category yet.")
-                    )
+                    ContentUnavailableView {
+                        Label("Nothing in \(filter.title)", systemImage: "line.3.horizontal.decrease.circle")
+                    } description: {
+                        Text("You haven't added anything in this category yet.")
+                    } actions: {
+                        Button("Add Item") {
+                            showingAddSheet = true
+                        }
+                        .buttonStyle(.borderedProminent)
+
+                        Button("Show All Items") {
+                            filter = .all
+                        }
+                    }
                 } else {
                     itemGrid
                 }
@@ -61,12 +71,20 @@ struct ClosetView: View {
         }
     }
 
+    /// Wide layouts get more, smaller cells; compact keeps the larger cards.
+    private var gridSpacing: CGFloat {
+        horizontalSizeClass == .regular ? 10 : 12
+    }
+
+    private var gridColumns: [GridItem] {
+        horizontalSizeClass == .regular
+            ? [GridItem(.adaptive(minimum: 100, maximum: 140), spacing: gridSpacing)]
+            : [GridItem(.adaptive(minimum: 110, maximum: 160), spacing: gridSpacing)]
+    }
+
     private var itemGrid: some View {
         ScrollView {
-            LazyVGrid(
-                columns: [GridItem(.adaptive(minimum: 110, maximum: 160), spacing: 12)],
-                spacing: 12
-            ) {
+            LazyVGrid(columns: gridColumns, spacing: gridSpacing) {
                 ForEach(filteredItems) { item in
                     NavigationLink(value: item) {
                         WardrobeItemCell(item: item)
@@ -88,8 +106,8 @@ private struct WardrobeItemCell: View {
                 asset: item.thumbnailImage ?? item.displayImage,
                 placeholderSymbol: "tshirt"
             )
-            .frame(height: 130)
             .frame(maxWidth: .infinity)
+            .aspectRatio(1, contentMode: .fit)
             .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
 
             Text(item.name)

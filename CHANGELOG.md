@@ -5,6 +5,8 @@
 ### Added
 
 - Layered Liquid Glass app icon (`AppIcon.icon`) with the brand gradient fill and vector ring, alongside the flat icon fallbacks.
+- Debug-only orphan media scan at launch that reports SwiftData rows with missing files and unreferenced files on disk, as counts only.
+- Empty states now lead to the action that fills them: Lookbook links to Try On, the Try On shelf links to the Closet, and a filtered-empty Closet offers Add Item and Show All.
 - VoiceOver custom actions on the try-on canvas: move a placed item up/down/left/right in 5% steps, remove it, and hear its position; the avatar and layers now expose button and selected-state traits.
 - Test coverage for MediaStore file IO, TryOnComposer rendering (including opacity blending and z-order), WardrobeRepository create/replace/delete transactions, and the clothing-extraction fallback contract.
 
@@ -13,6 +15,10 @@
 - Promoted `MediaStore` to an actor-backed async service; repositories and views now await media IO, and image encoding runs off the main thread.
 - Repository delete flows save SwiftData before removing files, so a failed save can no longer leave rows pointing at missing media.
 - The camera capture overlay's framing hint becomes fully opaque when Reduce Transparency is enabled.
+- Imported originals are stored as HEIC when the device can encode it (smaller files), falling back to JPEG; generated derivatives keep their formats.
+- The closet grid shows more, smaller cells on iPad and wide layouts, and cells scale with column width instead of using a fixed image height.
+- Camera capture guidance now includes lighting and background-contrast tips in both the copy and the in-camera overlay.
+- If even the in-memory fallback data store cannot be created at launch, the app shows an error screen with recovery steps instead of terminating.
 
 ### Fixed
 

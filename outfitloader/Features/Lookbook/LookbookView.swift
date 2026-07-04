@@ -3,6 +3,7 @@ import SwiftUI
 
 struct LookbookView: View {
     let onReopenLook: (OutfitLook) -> Void
+    let onOpenTryOn: () -> Void
 
     @Query(
         filter: #Predicate<OutfitLook> { $0.isArchived == false },
@@ -18,7 +19,10 @@ struct LookbookView: View {
                     ContentUnavailableView {
                         Label("No Looks Yet", systemImage: "rectangle.grid.2x2")
                     } description: {
-                        Text("Assemble and save an outfit in Try On.")
+                        Text("Outfits you save in Try On appear here, ready to reopen any morning.")
+                    } actions: {
+                        Button("Open Try On", action: onOpenTryOn)
+                            .buttonStyle(.borderedProminent)
                     }
                 } else {
                     lookGrid
